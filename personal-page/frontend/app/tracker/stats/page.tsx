@@ -101,7 +101,7 @@ interface CalendarCell {
   isFuture: boolean;
 }
 
-function buildCalendar(trainings: TrainingEntry[]) {
+function buildCalendar(trainings: TrainingEntry[], viewDate: Date) {
   const byDay = new Map<string, string[]>();
   trainings.forEach((t) => {
     const day = toIsoDay(t.createdAt);
@@ -112,8 +112,8 @@ function buildCalendar(trainings: TrainingEntry[]) {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const lastOfMonth  = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const firstOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
+  const lastOfMonth  = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0);
 
   // Align grid start to Monday
   const startDow = firstOfMonth.getDay();
@@ -131,7 +131,9 @@ function buildCalendar(trainings: TrainingEntry[]) {
     const week: CalendarCell[] = [];
     for (let d = 0; d < 7; d++) {
       const iso = cursor.toISOString().slice(0, 10);
-      const isCurrentMonth = cursor.getMonth() === today.getMonth();
+      const isCurrentMonth =
+        cursor.getMonth() === viewDate.getMonth() &&
+        cursor.getFullYear() === viewDate.getFullYear();
       const isFuture = cursor > today;
       week.push({
         date: iso,
@@ -166,6 +168,7 @@ export default function TrackerStats() {
   const [weightRange, setWeightRange] = useState<Range>("all");
   const [kcalRange, setKcalRange]     = useState<Range>("month");
   const [targetWeight, setTargetWeight] = useState<string>("92");
+  const [calendarOffset, setCalendarOffset] = useState(0);
 
   useEffect(() => {
     const saved = localStorage.getItem("targetWeight");
@@ -207,7 +210,9 @@ export default function TrackerStats() {
   const streak     = calcStreak(weights);
   const avgWeekly  = calcAvgKcal(food, 7);
   const avgMonthly = calcAvgKcal(food, 30);
-  const calendar   = buildCalendar(trainings);
+  const today      = new Date();
+  const viewDate   = new Date(today.getFullYear(), today.getMonth() + calendarOffset, 1);
+  const calendar   = buildCalendar(trainings, viewDate);
   const target     = parseFloat(targetWeight);
 
   return (
@@ -333,7 +338,24 @@ export default function TrackerStats() {
                 <p className="font-[family-name:var(--font-geist-mono)] text-white/30 text-xs tracking-widest uppercase">
                   Training log
                 </p>
-                <p className="text-white/40 text-sm font-medium">{calendar.monthLabel}</p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCalendarOffset((o) => o - 1)}
+                    className="w-7 h-7 flex items-center justify-center rounded-md text-white/30 hover:text-white hover:bg-white/5 transition-colors"
+                    aria-label="Previous month"
+                  >
+                    ←
+                  </button>
+                  <p className="text-white/40 text-sm font-medium w-36 text-center">{calendar.monthLabel}</p>
+                  <button
+                    onClick={() => setCalendarOffset((o) => o + 1)}
+                    disabled={calendarOffset >= 0}
+                    className="w-7 h-7 flex items-center justify-center rounded-md text-white/30 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+                    aria-label="Next month"
+                  >
+                    →
+                  </button>
+                </div>
               </div>
               {trainings.length === 0 ? (
                 <p className="text-white/30 text-sm">No training entries yet.</p>
