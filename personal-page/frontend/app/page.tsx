@@ -1,17 +1,11 @@
+import Navbar from "@/components/Navbar";
+import BackToTop from "@/components/BackToTop";
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-[#0a0a0a] text-white font-[family-name:var(--font-geist-sans)]">
 
-      {/* Nav */}
-      <nav className="fixed top-0 w-full z-10 px-8 py-5 flex justify-between items-center border-b border-white/5 bg-[#0a0a0a]/80 backdrop-blur-sm">
-        <span className="font-[family-name:var(--font-geist-mono)] text-sm text-white/40 tracking-widest uppercase">KEO</span>
-        <div className="flex gap-8 text-sm text-white/50">
-          <a href="#about" className="hover:text-white transition-colors">About</a>
-          <a href="#experience" className="hover:text-white transition-colors">Experience</a>
-          <a href="#contact" className="hover:text-white transition-colors">Contact</a>
-          <a href="/tracker" className="hover:text-white transition-colors">Tracker</a>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero */}
       <section className="min-h-screen flex flex-col justify-center px-8 md:px-20 pt-24">
@@ -172,6 +166,8 @@ export default function Home() {
         <span>Karl Erik Ott</span>
         <span>{new Date().getFullYear()}</span>
       </footer>
+
+      <BackToTop />
 
     </main>
   );

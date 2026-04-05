@@ -12,9 +12,31 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const URL = "https://personal-page-six-ashen.vercel.app";
+const TITLE = "Karl Erik Ott — Software Engineer";
+const DESCRIPTION =
+  "Karl Erik Ott is a Software Engineer at Wise, building transaction processing systems at scale. Based in Estonia.";
+
 export const metadata: Metadata = {
-  title: "Karl Erik Ott — Software Engineer",
-  description: "Personal page of Karl Erik Ott, Software Engineer.",
+  title: TITLE,
+  description: DESCRIPTION,
+  metadataBase: new URL(URL),
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: URL,
+    siteName: "Karl Erik Ott",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
