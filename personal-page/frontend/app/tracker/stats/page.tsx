@@ -94,27 +94,31 @@ function calcAvgKcal(food: FoodEntry[], days: number): number {
 }
 
 function buildHeatmap(trainings: TrainingEntry[]) {
-  const byDay = new Map<string, string>();
-  [...trainings].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-    .forEach((t) => byDay.set(toIsoDay(t.createdAt), t.type));
+  // Store all types per day (multiple trainings supported)
+  const byDay = new Map<string, string[]>();
+  trainings.forEach((t) => {
+    const day = toIsoDay(t.createdAt);
+    const existing = byDay.get(day) ?? [];
+    if (!existing.includes(t.type)) existing.push(t.type);
+    byDay.set(day, existing);
+  });
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  // Align start to Monday 26 weeks ago
   const start = new Date(today);
   start.setDate(today.getDate() - 26 * 7);
   const dow = start.getDay();
   start.setDate(start.getDate() - (dow === 0 ? 6 : dow - 1));
 
-  const weeks: { date: string; type: string | null }[][] = [];
+  const weeks: { date: string; types: string[] }[][] = [];
   for (let w = 0; w < 27; w++) {
-    const week: { date: string; type: string | null }[] = [];
+    const week: { date: string; types: string[] }[] = [];
     for (let d = 0; d < 7; d++) {
       const cell = new Date(start);
       cell.setDate(start.getDate() + w * 7 + d);
       if (cell > today) break;
       const iso = cell.toISOString().slice(0, 10);
-      week.push({ date: iso, type: byDay.get(iso) ?? null });
+      week.push({ date: iso, types: byDay.get(iso) ?? [] });
     }
     if (week.length > 0) weeks.push(week);
   }
@@ -135,11 +139,11 @@ export default function TrackerStats() {
   const [loading, setLoading]     = useState(true);
   const [weightRange, setWeightRange] = useState<Range>("all");
   const [kcalRange, setKcalRange]     = useState<Range>("month");
-  const [targetWeight, setTargetWeight] = useState<string>("");
+  const [targetWeight, setTargetWeight] = useState<string>("92");
 
   useEffect(() => {
     const saved = localStorage.getItem("targetWeight");
-    if (saved) setTargetWeight(saved);
+    if (saved) setTargetWeight(saved); // override default only if user has set it
 
     Promise.all([
       fetch("/api/tracker/weight").then((r) => r.json()),
@@ -239,10 +243,17 @@ export default function TrackerStats() {
                       type="number"
                       domain={["auto", "auto"]}
                       tickFormatter={(ts) => new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}
-                      tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
-                      axisLine={false} tickLine={false} interval="preserveStartEnd"
+                      tick={false}
+                      axisLine={false} tickLine={false}
                     />
-                    <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false} domain={["auto", "auto"]} />
+                    <YAxis
+                      tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
+                      axisLine={false} tickLine={false}
+                      domain={[
+                        (dataMin: number) => Math.floor(Math.min(dataMin, !isNaN(target) && target > 0 ? target : dataMin) - 1),
+                        "auto",
+                      ]}
+                    />
                     <Tooltip
                       contentStyle={{ backgroundColor: "#1a1a1a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
                       labelStyle={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }}
@@ -303,18 +314,32 @@ export default function TrackerStats() {
                     <div className="flex gap-1">
                       {heatmap.map((week, wi) => (
                         <div key={wi} className="flex flex-col gap-1">
-                          {week.map((cell) => (
-                            <div
-                              key={cell.date}
-                              title={cell.type ? `${cell.date} — ${cell.type}` : cell.date}
-                              className="w-3 h-3 rounded-sm transition-opacity hover:opacity-80"
-                              style={{
-                                backgroundColor: cell.type
-                                  ? TRAINING_COLORS[cell.type] ?? "#6b7280"
-                                  : "rgba(255,255,255,0.05)",
-                              }}
-                            />
-                          ))}
+                          {week.map((cell) => {
+                            const hasTraining = cell.types.length > 0;
+                            const multi = cell.types.length > 1;
+                            const primaryType = cell.types[0] ?? null;
+                            const tooltip = hasTraining
+                              ? `${cell.date} — ${cell.types.join(", ")}`
+                              : cell.date;
+                            return (
+                              <div
+                                key={cell.date}
+                                title={tooltip}
+                                className="relative w-3 h-3 rounded-sm transition-opacity hover:opacity-80"
+                                style={{
+                                  backgroundColor: primaryType
+                                    ? TRAINING_COLORS[primaryType] ?? "#6b7280"
+                                    : "rgba(255,255,255,0.05)",
+                                }}
+                              >
+                                {multi && (
+                                  <span className="absolute inset-0 flex items-center justify-center">
+                                    <span className="w-1 h-1 rounded-full bg-white/70" />
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       ))}
                     </div>
