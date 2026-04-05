@@ -169,6 +169,8 @@ export default function TrackerStats() {
   const [kcalRange, setKcalRange]     = useState<Range>("month");
   const [targetWeight, setTargetWeight] = useState<string>("92");
   const [calendarOffset, setCalendarOffset] = useState(0);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState("");
 
   useEffect(() => {
     const saved = localStorage.getItem("targetWeight");
@@ -185,6 +187,29 @@ export default function TrackerStats() {
       setLoading(false);
     });
   }, []);
+
+  async function syncStrava() {
+    setSyncing(true);
+    setSyncMsg("");
+    try {
+      const res = await fetch("/api/strava/sync", { method: "POST" });
+      const json = await res.json();
+      if (res.ok) {
+        const n = json.data?.imported ?? 0;
+        setSyncMsg(n > 0 ? `${n} new activit${n === 1 ? "y" : "ies"} imported.` : "Already up to date.");
+        if (n > 0) {
+          // refresh trainings
+          const t = await fetch("/api/tracker/training").then((r) => r.json());
+          setTrainings(t.data ?? []);
+        }
+      } else {
+        setSyncMsg(json.error ?? "Sync failed.");
+      }
+    } catch {
+      setSyncMsg("Network error.");
+    }
+    setSyncing(false);
+  }
 
   function handleTargetWeight(val: string) {
     setTargetWeight(val);
@@ -335,9 +360,24 @@ export default function TrackerStats() {
             {/* Training calendar */}
             <div>
               <div className="flex items-center justify-between mb-6">
-                <p className="font-[family-name:var(--font-geist-mono)] text-white/30 text-xs tracking-widest uppercase">
-                  Training log
-                </p>
+                <div className="flex items-center gap-4">
+                  <p className="font-[family-name:var(--font-geist-mono)] text-white/30 text-xs tracking-widest uppercase">
+                    Training log
+                  </p>
+                  <button
+                    onClick={syncStrava}
+                    disabled={syncing}
+                    className="flex items-center gap-1.5 text-xs text-white/30 hover:text-white border border-white/10 hover:border-white/20 px-3 py-1 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <svg className={`w-3 h-3 ${syncing ? "animate-spin" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    {syncing ? "Syncing…" : "Sync Strava"}
+                  </button>
+                  {syncMsg && (
+                    <span className="text-xs text-white/40">{syncMsg}</span>
+                  )}
+                </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCalendarOffset((o) => o - 1)}

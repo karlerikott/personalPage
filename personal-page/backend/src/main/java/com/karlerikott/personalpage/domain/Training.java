@@ -28,8 +28,13 @@ public class Training {
     @Column(nullable = false)
     private Instant createdAt;
 
+    @Column(name = "strava_id")
+    private Long stravaId;
+
     @PrePersist
     void prePersist() {
-        this.createdAt = Instant.now();
+        if (this.createdAt == null) {
+            this.createdAt = Instant.now();
+        }
     }
 }
