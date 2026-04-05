@@ -185,7 +185,7 @@ export default function TrackerStats() {
   const target     = parseFloat(targetWeight);
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-white font-[family-name:var(--font-geist-sans)] px-4 py-12">
+    <main className="min-h-screen bg-[#0a0a0a] text-white font-[family-name:var(--font-geist-sans)] px-4 pb-12 pt-8">
       <div className="max-w-3xl mx-auto">
 
         {/* Header */}
