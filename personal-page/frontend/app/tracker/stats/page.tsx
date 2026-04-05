@@ -73,7 +73,7 @@ export default function TrackerStats() {
   }, []);
 
   const weightData = filterByRange(weights, weightRange).map((w) => ({
-    date: displayDate(toIsoDay(w.createdAt)),
+    ts: new Date(w.createdAt).getTime(),
     weight: w.weightKg,
   }));
 
@@ -126,12 +126,23 @@ export default function TrackerStats() {
                 <ResponsiveContainer width="100%" height={240}>
                   <LineChart data={weightData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="date" tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+                    <XAxis
+                      dataKey="ts"
+                      scale="time"
+                      type="number"
+                      domain={["auto", "auto"]}
+                      tickFormatter={(ts) => new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}
+                      tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                      interval="preserveStartEnd"
+                    />
                     <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false} domain={["auto", "auto"]} />
                     <Tooltip
                       contentStyle={{ backgroundColor: "#1a1a1a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
                       labelStyle={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }}
                       itemStyle={{ color: "#10b981" }}
+                      labelFormatter={(ts) => new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                     />
                     <Line type="monotone" dataKey="weight" stroke="#10b981" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
                   </LineChart>
