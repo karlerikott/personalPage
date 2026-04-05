@@ -93,8 +93,15 @@ function calcAvgKcal(food: FoodEntry[], days: number): number {
   return Math.round(Object.values(byDay).reduce((s, v) => s + v, 0) / daysWithData);
 }
 
-function buildHeatmap(trainings: TrainingEntry[]) {
-  // Store all types per day (multiple trainings supported)
+interface CalendarCell {
+  date: string;
+  day: number;
+  types: string[];
+  isCurrentMonth: boolean;
+  isFuture: boolean;
+}
+
+function buildCalendar(trainings: TrainingEntry[]) {
   const byDay = new Map<string, string[]>();
   trainings.forEach((t) => {
     const day = toIsoDay(t.createdAt);
@@ -105,24 +112,43 @@ function buildHeatmap(trainings: TrainingEntry[]) {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const start = new Date(today);
-  start.setDate(today.getDate() - 26 * 7);
-  const dow = start.getDay();
-  start.setDate(start.getDate() - (dow === 0 ? 6 : dow - 1));
+  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const lastOfMonth  = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-  const weeks: { date: string; types: string[] }[][] = [];
-  for (let w = 0; w < 27; w++) {
-    const week: { date: string; types: string[] }[] = [];
+  // Align grid start to Monday
+  const startDow = firstOfMonth.getDay();
+  const gridStart = new Date(firstOfMonth);
+  gridStart.setDate(firstOfMonth.getDate() - (startDow === 0 ? 6 : startDow - 1));
+
+  // Align grid end to Sunday
+  const endDow = lastOfMonth.getDay();
+  const gridEnd = new Date(lastOfMonth);
+  gridEnd.setDate(lastOfMonth.getDate() + (endDow === 0 ? 0 : 7 - endDow));
+
+  const weeks: CalendarCell[][] = [];
+  const cursor = new Date(gridStart);
+  while (cursor <= gridEnd) {
+    const week: CalendarCell[] = [];
     for (let d = 0; d < 7; d++) {
-      const cell = new Date(start);
-      cell.setDate(start.getDate() + w * 7 + d);
-      if (cell > today) break;
-      const iso = cell.toISOString().slice(0, 10);
-      week.push({ date: iso, types: byDay.get(iso) ?? [] });
+      const iso = cursor.toISOString().slice(0, 10);
+      const isCurrentMonth = cursor.getMonth() === today.getMonth();
+      const isFuture = cursor > today;
+      week.push({
+        date: iso,
+        day: cursor.getDate(),
+        types: isCurrentMonth && !isFuture ? (byDay.get(iso) ?? []) : [],
+        isCurrentMonth,
+        isFuture,
+      });
+      cursor.setDate(cursor.getDate() + 1);
     }
-    if (week.length > 0) weeks.push(week);
+    weeks.push(week);
   }
-  return weeks;
+
+  return {
+    weeks,
+    monthLabel: firstOfMonth.toLocaleDateString("en-GB", { month: "long", year: "numeric" }),
+  };
 }
 
 const RANGES: { label: string; value: Range }[] = [
@@ -181,7 +207,7 @@ export default function TrackerStats() {
   const streak     = calcStreak(weights);
   const avgWeekly  = calcAvgKcal(food, 7);
   const avgMonthly = calcAvgKcal(food, 30);
-  const heatmap    = buildHeatmap(trainings);
+  const calendar   = buildCalendar(trainings);
   const target     = parseFloat(targetWeight);
 
   return (
@@ -301,54 +327,78 @@ export default function TrackerStats() {
               )}
             </div>
 
-            {/* Training heatmap */}
+            {/* Training calendar */}
             <div>
-              <p className="font-[family-name:var(--font-geist-mono)] text-white/30 text-xs tracking-widest uppercase mb-6">
-                Training log — last 6 months
-              </p>
+              <div className="flex items-center justify-between mb-6">
+                <p className="font-[family-name:var(--font-geist-mono)] text-white/30 text-xs tracking-widest uppercase">
+                  Training log
+                </p>
+                <p className="text-white/40 text-sm font-medium">{calendar.monthLabel}</p>
+              </div>
               {trainings.length === 0 ? (
                 <p className="text-white/30 text-sm">No training entries yet.</p>
               ) : (
                 <>
-                  <div className="overflow-x-auto pb-2">
-                    <div className="flex gap-1">
-                      {heatmap.map((week, wi) => (
-                        <div key={wi} className="flex flex-col gap-1">
-                          {week.map((cell) => {
-                            const hasTraining = cell.types.length > 0;
-                            const multi = cell.types.length > 1;
-                            const primaryType = cell.types[0] ?? null;
-                            const tooltip = hasTraining
-                              ? `${cell.date} — ${cell.types.join(", ")}`
-                              : cell.date;
-                            return (
-                              <div
-                                key={cell.date}
-                                title={tooltip}
-                                className="relative w-3 h-3 rounded-sm transition-opacity hover:opacity-80"
-                                style={{
-                                  backgroundColor: primaryType
-                                    ? TRAINING_COLORS[primaryType] ?? "#6b7280"
-                                    : "rgba(255,255,255,0.05)",
-                                }}
-                              >
-                                {multi && (
-                                  <span className="absolute inset-0 flex items-center justify-center">
-                                    <span className="w-1 h-1 rounded-full bg-white/70" />
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ))}
-                    </div>
+                  {/* Day-of-week headers */}
+                  <div className="grid grid-cols-7 gap-1 mb-1">
+                    {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+                      <div key={d} className="text-center text-xs text-white/20 font-[family-name:var(--font-geist-mono)] py-1">
+                        {d}
+                      </div>
+                    ))}
                   </div>
+                  {/* Weeks */}
+                  {calendar.weeks.map((week, wi) => (
+                    <div key={wi} className="grid grid-cols-7 gap-1 mb-1">
+                      {week.map((cell) => {
+                        const primary = cell.types[0] ?? null;
+                        const multi   = cell.types.length > 1;
+                        const tooltip = cell.types.length > 0
+                          ? `${cell.date} — ${cell.types.join(", ")}`
+                          : cell.date;
+                        return (
+                          <div
+                            key={cell.date}
+                            title={tooltip}
+                            className="relative aspect-square rounded-lg flex items-center justify-center transition-opacity hover:opacity-80"
+                            style={{
+                              backgroundColor: primary
+                                ? (TRAINING_COLORS[primary] ?? "#6b7280") + "33"
+                                : cell.isCurrentMonth && !cell.isFuture
+                                ? "rgba(255,255,255,0.03)"
+                                : "transparent",
+                              border: primary
+                                ? `1px solid ${TRAINING_COLORS[primary] ?? "#6b7280"}66`
+                                : cell.isCurrentMonth && !cell.isFuture
+                                ? "1px solid rgba(255,255,255,0.05)"
+                                : "1px solid transparent",
+                            }}
+                          >
+                            <span
+                              className="text-xs font-medium select-none"
+                              style={{
+                                color: primary
+                                  ? TRAINING_COLORS[primary]
+                                  : cell.isCurrentMonth && !cell.isFuture
+                                  ? "rgba(255,255,255,0.4)"
+                                  : "rgba(255,255,255,0.1)",
+                              }}
+                            >
+                              {cell.day}
+                            </span>
+                            {multi && (
+                              <span className="absolute top-1 right-1 w-1 h-1 rounded-full bg-white/50" />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
                   {/* Legend */}
-                  <div className="flex flex-wrap gap-4 mt-4">
+                  <div className="flex flex-wrap gap-4 mt-5">
                     {Object.entries(TRAINING_COLORS).map(([type, color]) => (
                       <div key={type} className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color }} />
+                        <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color + "33", border: `1px solid ${color}66` }} />
                         <span className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)]">
                           {type.charAt(0) + type.slice(1).toLowerCase()}
                         </span>
