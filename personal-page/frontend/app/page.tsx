@@ -132,7 +132,7 @@ export default function Home() {
           </h2>
           <div className="flex flex-col gap-4">
             <a
-              href="mailto:karl@example.com"
+              href="mailto:karlerik.ott@gmail.com"
               className="group flex items-center gap-3 text-white/50 hover:text-white transition-colors text-sm"
             >
               <span className="w-8 h-px bg-white/20 group-hover:bg-white/60 transition-colors" />
