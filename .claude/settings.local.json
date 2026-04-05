@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(java -version)",
+      "Bash(mvn -version)",
+      "Bash(curl --version)",
+      "Bash(unzip --version)",
+      "Bash(curl -s \"https://start.spring.io/starter.zip?type=maven-project&language=java&bootVersion=3.4.4&baseDir=backend&groupId=com.karlerikott&artifactId=personal-page-backend&name=Personal+Page+Backend&packageName=com.karlerikott.personalpage&javaVersion=21&dependencies=web,data-jpa,postgresql,devtools,lombok\" -o /c/Users/Karl/Desktop/dev/personal-page/backend.zip)",
+      "Bash(python3 -c \"import zipfile; zipfile.ZipFile\\(''/c/Users/Karl/Desktop/dev/personal-page/backend.zip''\\).extractall\\(''/c/Users/Karl/Desktop/dev/personal-page/''\\)\")",
+      "Bash(curl -v \"https://start.spring.io/starter.zip?type=maven-project&language=java&bootVersion=3.4.4&baseDir=backend&groupId=com.karlerikott&artifactId=personal-page-backend&name=Personal+Page+Backend&packageName=com.karlerikott.personalpage&javaVersion=21&dependencies=web,data-jpa,postgresql,devtools,lombok\" -o \"C:/Users/Karl/Desktop/dev/personal-page/backend.zip\")",
+      "Bash(curl -s \"https://start.spring.io\" -o /dev/null -w \"%{http_code}\")",
+      "Bash(curl -s \"https://start.spring.io/actuator/info\")",
+      "Bash(/c/Program Files/Python313/python.exe -c \"import sys,json; d=json.load\\(sys.stdin\\); versions=[r[''''id''''] for r in d.get\\(''''bom'''',{}\\).get\\(''''Spring Boot'''',{}\\).get\\(''''values'''',[]\\)][:5]; print\\(versions\\)\")",
+      "Bash(/c/Program Files/Python313/python.exe -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(list\\(d.keys\\(\\)\\)\\)\")",
+      "Bash(/c/Program Files/Python313/python.exe -c \"import sys,json; d=json.load\\(sys.stdin\\); ranges=d.get\\(''''bom-ranges'''',{}\\); sb=ranges.get\\(''''org.springframework.boot'''',{}\\); print\\(list\\(sb.keys\\(\\)\\)[:5]\\)\")",
+      "Bash(curl -s \"https://start.spring.io\" -H \"Accept: application/json\")",
+      "Bash(/c/Program Files/Python313/python.exe -c \"import sys,json; d=json.load\\(sys.stdin\\); sb=d.get\\(''''bootVersion'''',{}\\); vals=sb.get\\(''''values'''',[]\\); print\\([v.get\\(''''id''''\\) for v in vals[:8]]\\)\")",
+      "Bash(npm install:*)"
+    ]
+  }
+}
