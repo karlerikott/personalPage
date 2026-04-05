@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:8080/api/:path*",
+        destination: "https://personalpage-production-b21f.up.railway.app/api/:path*",
       },
     ];
   },
