@@ -2,7 +2,7 @@
 
 Personal brand website for Karl Erik Ott, Software Engineer at Wise. Built as a monorepo with a Next.js frontend and a Spring Boot backend.
 
-Live at: [karlerikott.vercel.app](https://karlerikott.vercel.app)
+Live at: [personal-page-six-ashen.vercel.app](https://personal-page-six-ashen.vercel.app)
 
 ## Stack
 
