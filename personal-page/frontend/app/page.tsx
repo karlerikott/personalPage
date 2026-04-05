@@ -148,7 +148,7 @@ export default function Home() {
               github.com/karlerikott
             </a>
             <a
-              href="https://linkedin.com/in/karlerikott"
+              href="https://www.linkedin.com/in/karl-erik-ott-9a8982203/"
               target="_blank"
               rel="noopener noreferrer"
               className="group flex items-center gap-3 text-white/50 hover:text-white transition-colors text-sm"
