@@ -3,7 +3,6 @@ package com.karlerikott.personalpage.strava;
 import com.karlerikott.personalpage.domain.Training;
 import com.karlerikott.personalpage.domain.TrainingType;
 import com.karlerikott.personalpage.repository.TrainingRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -19,11 +18,10 @@ import java.util.List;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class StravaService {
 
     private final TrainingRepository trainingRepository;
-    private final RestClient restClient = RestClient.create();
+    private final RestClient restClient;
 
     @Value("${strava.client-id:}")
     private String clientId;
@@ -33,6 +31,11 @@ public class StravaService {
 
     @Value("${strava.refresh-token:}")
     private String refreshToken;
+
+    public StravaService(TrainingRepository trainingRepository, RestClient.Builder restClientBuilder) {
+        this.trainingRepository = trainingRepository;
+        this.restClient = restClientBuilder.build();
+    }
 
     public StravaTokenResponse exchangeCode(String code) {
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
@@ -80,7 +83,7 @@ public class StravaService {
                     .uri("https://www.strava.com/api/v3/athlete/activities?per_page=100&page=" + pageNum)
                     .header("Authorization", "Bearer " + accessToken)
                     .retrieve()
-                    .body(new ParameterizedTypeReference<>() {});
+                    .body(new ParameterizedTypeReference<List<StravaActivitySummary>>() {});
 
             if (batch == null || batch.isEmpty()) break;
             all.addAll(batch);

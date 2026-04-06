@@ -2,13 +2,14 @@ package com.karlerikott.personalpage.controller;
 
 import com.karlerikott.personalpage.strava.StravaService;
 import com.karlerikott.personalpage.strava.StravaTokenResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -23,14 +24,14 @@ public class StravaController {
 
     /** Step 1 — visit this URL to kick off the OAuth flow */
     @GetMapping("/authorize")
-    public ResponseEntity<Void> authorize() {
+    public void authorize(HttpServletResponse response) throws IOException {
         String url = "https://www.strava.com/oauth/authorize"
                 + "?client_id=" + clientId
                 + "&response_type=code"
                 + "&redirect_uri=https://personalpage-production-b21f.up.railway.app/api/strava/callback"
                 + "&approval_prompt=force"
-                + "&scope=activity:read_all";
-        return ResponseEntity.status(302).location(URI.create(url)).build();
+                + "&scope=activity%3Aread_all";
+        response.sendRedirect(url);
     }
 
     /** Step 2 — Strava redirects here with a one-time code; we exchange it for tokens */
