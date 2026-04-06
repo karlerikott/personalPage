@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -10,15 +10,17 @@ interface Section {
   color: string;
 }
 
+type SectionId = "situation" | "diagnosis" | "shifts" | "thoughts" | "reminders" | "timeline";
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SECTIONS: Section[] = [
-  { id: "situation",  label: "Situation",  color: "text-violet-400" },
-  { id: "diagnosis",  label: "What's happening", color: "text-blue-400" },
-  { id: "shifts",     label: "Mindset shifts", color: "text-emerald-400" },
-  { id: "thoughts",   label: "Intrusive thoughts", color: "text-amber-400" },
-  { id: "reminders",  label: "Daily reminders", color: "text-rose-400" },
-  { id: "timeline",   label: "Healing timeline", color: "text-indigo-400" },
+  { id: "situation",  label: "Situation",   color: "text-violet-400" },
+  { id: "diagnosis",  label: "Diagnosis",   color: "text-blue-400" },
+  { id: "shifts",     label: "Mindset",     color: "text-emerald-400" },
+  { id: "thoughts",   label: "Thoughts",    color: "text-amber-400" },
+  { id: "reminders",  label: "Reminders",   color: "text-rose-400" },
+  { id: "timeline",   label: "Timeline",    color: "text-indigo-400" },
 ];
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -104,9 +106,58 @@ export default function DiaryPage() {
     new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
   );
 
+  const [activeSection, setActiveSection] = useState<SectionId>("situation");
+  const sectionRefs = useRef<Record<SectionId, HTMLElement | null>>({
+    situation: null, diagnosis: null, shifts: null,
+    thoughts: null, reminders: null, timeline: null,
+  });
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible.length > 0) setActiveSection(visible[0].target.id as SectionId);
+      },
+      { rootMargin: "-30% 0px -60% 0px", threshold: [0, 0.25, 0.5, 1] }
+    );
+    SECTIONS.forEach(({ id }) => {
+      const el = sectionRefs.current[id as SectionId];
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  function scrollToSection(id: SectionId) {
+    sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-white font-[family-name:var(--font-geist-sans)] px-4 pb-24 pt-10">
-      <div className="max-w-2xl mx-auto">
+    <main className="min-h-screen bg-[#0a0a0a] text-white font-[family-name:var(--font-geist-sans)] pb-24">
+
+      {/* ── Sticky section nav ──────────────────────────────────────────── */}
+      <div className="sticky top-[73px] z-40 bg-[#0a0a0a]/90 backdrop-blur border-b border-white/5">
+        <div className="max-w-2xl mx-auto px-4">
+          <div className="flex items-center gap-1 overflow-x-auto py-2 scrollbar-none">
+            {SECTIONS.map(({ id, label }) => (
+              <button
+                key={id}
+                onClick={() => scrollToSection(id as SectionId)}
+                className={`shrink-0 px-3 py-1.5 rounded-md text-xs font-medium transition-all font-[family-name:var(--font-geist-mono)] tracking-wide ${
+                  activeSection === id
+                    ? "bg-white/10 text-white"
+                    : "text-white/30 hover:text-white/70"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-4 pt-10">
 
         {/* Header */}
         <div className="mb-12">
@@ -118,7 +169,7 @@ export default function DiaryPage() {
         <div className="flex flex-col gap-12">
 
           {/* ── Situation ──────────────────────────────────────────────────── */}
-          <section id={SECTIONS[0].id}>
+          <section id={SECTIONS[0].id} ref={(el) => { sectionRefs.current.situation = el; }}>
             <SectionLabel color={SECTIONS[0].color}>Situation</SectionLabel>
             <Card>
               <p className="text-white/60 text-sm leading-relaxed mb-4">
@@ -131,7 +182,7 @@ export default function DiaryPage() {
           </section>
 
           {/* ── What's happening ───────────────────────────────────────────── */}
-          <section id={SECTIONS[1].id}>
+          <section id={SECTIONS[1].id} ref={(el) => { sectionRefs.current.diagnosis = el; }}>
             <SectionLabel color={SECTIONS[1].color}>What&apos;s actually happening</SectionLabel>
             <div className="flex flex-col gap-3">
               <Card>
@@ -158,7 +209,7 @@ export default function DiaryPage() {
           </section>
 
           {/* ── Mindset shifts ─────────────────────────────────────────────── */}
-          <section id={SECTIONS[2].id}>
+          <section id={SECTIONS[2].id} ref={(el) => { sectionRefs.current.shifts = el; }}>
             <SectionLabel color={SECTIONS[2].color}>Mindset shifts to internalize</SectionLabel>
             <div className="flex flex-col gap-3">
 
@@ -217,7 +268,7 @@ export default function DiaryPage() {
           </section>
 
           {/* ── Intrusive thoughts ─────────────────────────────────────────── */}
-          <section id={SECTIONS[3].id}>
+          <section id={SECTIONS[3].id} ref={(el) => { sectionRefs.current.thoughts = el; }}>
             <SectionLabel color={SECTIONS[3].color}>How to handle intrusive thoughts</SectionLabel>
             <div className="flex flex-col gap-3">
 
@@ -277,7 +328,7 @@ export default function DiaryPage() {
           </section>
 
           {/* ── Daily reminders ────────────────────────────────────────────── */}
-          <section id={SECTIONS[4].id}>
+          <section id={SECTIONS[4].id} ref={(el) => { sectionRefs.current.reminders = el; }}>
             <SectionLabel color={SECTIONS[4].color}>Daily reminders</SectionLabel>
             <Card>
               <p className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-4">Read these when anxiety spikes</p>
@@ -315,7 +366,7 @@ export default function DiaryPage() {
           </section>
 
           {/* ── Healing timeline ───────────────────────────────────────────── */}
-          <section id={SECTIONS[5].id}>
+          <section id={SECTIONS[5].id} ref={(el) => { sectionRefs.current.timeline = el; }}>
             <SectionLabel color={SECTIONS[5].color}>What healing looks like</SectionLabel>
             <Card className="mb-3">
               <p className="text-white/50 text-sm leading-relaxed mb-4">Think of this like recovering from a sprained ankle. You understand the injury, but it still hurts while healing. Your brain is rewiring a threat response — that takes repetition, not insight alone.</p>
@@ -367,6 +418,9 @@ export default function DiaryPage() {
           </div>
 
         </div>
+
+        {/* Spacer so the Timeline section can scroll into the active zone */}
+        <div className="h-[50vh]" aria-hidden />
       </div>
     </main>
   );

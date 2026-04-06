@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { label: "Experience", href: "/#experience" },
   { label: "Contact",    href: "/#contact" },
   { label: "Tracker",   href: "/tracker" },
+  { label: "Journal",   href: "/diary" },
 ];
 
 export default function Navbar() {
