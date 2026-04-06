@@ -236,6 +236,25 @@ export default function TrackerStats() {
   const avgWeekly  = calcAvgKcal(food, 7);
   const avgMonthly = calcAvgKcal(food, 30);
   const today      = new Date();
+
+  // Last 7 days breakdown (newest first)
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - i);
+    const iso = d.toISOString().slice(0, 10);
+    const kcal = food
+      .filter((f) => toIsoDay(f.createdAt) === iso)
+      .reduce((s, f) => s + f.kcal, 0);
+    return {
+      iso,
+      label: d.toLocaleDateString("en-GB", { weekday: "short" }),
+      day: d.getDate(),
+      kcal,
+    };
+  });
+  const weekTotal = weekDays.reduce((s, d) => s + d.kcal, 0);
+  const weekMax   = Math.max(...weekDays.map((d) => d.kcal), 1);
   const viewDate   = new Date(today.getFullYear(), today.getMonth() + calendarOffset, 1);
   const calendar   = buildCalendar(trainings, viewDate);
   const target     = parseFloat(targetWeight);
@@ -348,23 +367,59 @@ export default function TrackerStats() {
                 </p>
                 <RangeSelector value={kcalRange} onChange={setKcalRange} />
               </div>
-              {kcalByDay.length === 0 ? (
-                <p className="text-white/30 text-sm">No food entries for this range.</p>
-              ) : (
-                <ResponsiveContainer width="100%" height={240}>
-                  <BarChart data={kcalByDay}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="date" tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-                    <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: "#1a1a1a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
-                      labelStyle={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }}
-                      itemStyle={{ color: "#10b981" }}
-                    />
-                    <Bar dataKey="kcal" fill="#10b981" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
+              <div className="flex gap-6 items-start">
+                {/* Bar chart */}
+                <div className="flex-1 min-w-0">
+                  {kcalByDay.length === 0 ? (
+                    <p className="text-white/30 text-sm">No food entries for this range.</p>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={240}>
+                      <BarChart data={kcalByDay}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                        <XAxis dataKey="date" tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+                        <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false} />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: "#1a1a1a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
+                          labelStyle={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }}
+                          itemStyle={{ color: "#10b981" }}
+                        />
+                        <Bar dataKey="kcal" fill="#10b981" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+
+                {/* Weekly breakdown */}
+                <div className="w-36 shrink-0 bg-white/[0.03] border border-white/5 rounded-xl p-4 flex flex-col gap-2">
+                  <p className="font-[family-name:var(--font-geist-mono)] text-white/20 text-xs uppercase tracking-widest mb-1">
+                    This week
+                  </p>
+                  {weekDays.map(({ iso, label, day, kcal }) => (
+                    <div key={iso} className="flex flex-col gap-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">
+                          {label} <span className="text-white/20">{day}</span>
+                        </span>
+                        <span className={`text-xs font-semibold ${kcal > 0 ? "text-emerald-400" : "text-white/15"}`}>
+                          {kcal > 0 ? kcal.toLocaleString() : "—"}
+                        </span>
+                      </div>
+                      {kcal > 0 && (
+                        <div className="h-0.5 rounded-full bg-white/5 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-emerald-500/50"
+                            style={{ width: `${Math.round((kcal / weekMax) * 100)}%` }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <div className="border-t border-white/5 pt-2 mt-1 flex items-center justify-between">
+                    <span className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)]">Total</span>
+                    <span className="text-sm font-bold text-white">{weekTotal > 0 ? weekTotal.toLocaleString() : "—"}</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Training calendar */}
