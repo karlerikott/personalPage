@@ -23,13 +23,13 @@ public class StravaService {
     private final TrainingRepository trainingRepository;
     private final RestClient restClient;
 
-    @Value("${strava.client-id:}")
+    @Value("${strava.client.id:}")
     private String clientId;
 
-    @Value("${strava.client-secret:}")
+    @Value("${strava.client.secret:}")
     private String clientSecret;
 
-    @Value("${strava.refresh-token:}")
+    @Value("${strava.refresh.token:}")
     private String refreshToken;
 
     public StravaService(TrainingRepository trainingRepository, RestClient.Builder restClientBuilder) {

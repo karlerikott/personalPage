@@ -19,7 +19,7 @@ public class StravaController {
 
     private final StravaService stravaService;
 
-    @Value("${strava.client-id:}")
+    @Value("${strava.client.id:}")
     private String clientId;
 
     /** Step 1 — visit this URL to kick off the OAuth flow */
