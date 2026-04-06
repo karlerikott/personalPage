@@ -10,9 +10,16 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  if (pathname.startsWith("/diary") && !pathname.startsWith("/diary/login")) {
+    const auth = request.cookies.get("tracker_auth");
+    if (!auth || auth.value !== "1") {
+      return NextResponse.redirect(new URL("/diary/login", request.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/tracker/:path*"],
+  matcher: ["/tracker/:path*", "/diary/:path*"],
 };
