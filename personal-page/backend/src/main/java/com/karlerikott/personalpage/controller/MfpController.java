@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 @RestController
@@ -29,6 +30,27 @@ public class MfpController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body(ApiResponse.error("MFP sync failed: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Debug endpoint — fetches today's raw diary response so you can see what MFP returns.
+     * GET /api/mfp/test
+     */
+    @GetMapping("/test")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> test() {
+        try {
+            String today = LocalDate.now().toString();
+            String raw = mfpService.fetchRawDiary(today);
+            boolean isJson = raw != null && raw.trim().startsWith("{");
+            return ResponseEntity.ok(ApiResponse.ok(Map.of(
+                    "date", today,
+                    "isJson", isJson,
+                    "preview", raw != null ? raw.substring(0, Math.min(500, raw.length())) : "null"
+            )));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(ApiResponse.error("Test failed: " + e.getMessage()));
         }
     }
 }

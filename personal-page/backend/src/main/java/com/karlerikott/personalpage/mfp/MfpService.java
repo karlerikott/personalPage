@@ -147,18 +147,30 @@ public class MfpService {
         }
     }
 
-    private MfpDiaryResponse fetchDiary(HttpClient client, String date, String cookieHeader) throws Exception {
+    /** Public debug method — returns the raw response body for a given date */
+    public String fetchRawDiary(String date) throws Exception {
+        HttpClient client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+        String cookie = sessionCookie.isBlank() ? null : sessionCookie;
+        HttpResponse<String> response = buildDiaryRequest(client, date, cookie);
+        return "status=" + response.statusCode() + "\n" + response.body();
+    }
+
+    private HttpResponse<String> buildDiaryRequest(HttpClient client, String date, String cookieHeader) throws Exception {
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                 .uri(URI.create("https://www.myfitnesspal.com/food/diary/" + username + ".json?date=" + date))
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
                 .header("Accept", "application/json")
                 .header("X-Requested-With", "XMLHttpRequest");
-
         if (cookieHeader != null) {
             requestBuilder.header("Cookie", cookieHeader);
         }
+        return client.send(requestBuilder.GET().build(), HttpResponse.BodyHandlers.ofString());
+    }
 
-        HttpResponse<String> response = client.send(requestBuilder.GET().build(), HttpResponse.BodyHandlers.ofString());
+    private MfpDiaryResponse fetchDiary(HttpClient client, String date, String cookieHeader) throws Exception {
+        HttpResponse<String> response = buildDiaryRequest(client, date, cookieHeader);
 
         if (response.statusCode() != 200) {
             log.warn("MFP: diary request returned {} for date {}", response.statusCode(), date);
