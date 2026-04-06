@@ -18,7 +18,6 @@ const SECTIONS: Section[] = [
   { id: "shifts",     label: "Mindset shifts", color: "text-emerald-400" },
   { id: "thoughts",   label: "Intrusive thoughts", color: "text-amber-400" },
   { id: "reminders",  label: "Daily reminders", color: "text-rose-400" },
-  { id: "ruby",       label: "Talking to Ruby", color: "text-cyan-400" },
   { id: "timeline",   label: "Healing timeline", color: "text-indigo-400" },
 ];
 
@@ -123,7 +122,7 @@ export default function DiaryPage() {
             <SectionLabel color={SECTIONS[0].color}>Situation</SectionLabel>
             <Card>
               <p className="text-white/60 text-sm leading-relaxed mb-4">
-                You and Ruby have been getting very close since February. A few days ago she confessed she hooked up with someone in Thailand in December — before you were together. The confession triggered anger, then deep sadness, intrusive mental images, and a desire to avoid parties to escape jealousy triggers.
+                You and your partner have been getting very close. She confessed she hooked up with someone while travelling — before you were together. The confession triggered anger, then deep sadness, intrusive mental images, and a desire to avoid parties to escape jealousy triggers.
               </p>
               <Callout color="violet">
                 <strong className="text-white/90">The important thing to remember:</strong> You were not betrayed. She did nothing wrong. She did something honest — she told you voluntarily and said she wants to work through it together. Your brain reacted as if a betrayal happened, but the situation is not a betrayal. That mismatch is the whole problem.
@@ -141,14 +140,14 @@ export default function DiaryPage() {
                   <Insight text="This is retroactive jealousy — grief for an imagined past, not a real loss." />
                   <Insight text="Your brain turned a trust-building moment (her honesty) into a threat signal." />
                   <Insight text="You said yourself: if she never told you, everything would feel safe. That means this is an internal anxiety loop, not a relationship trust issue." />
-                  <Insight text="This pattern existed before Ruby — the jealousy over your friend flirting with your last girlfriend was the same mechanism." />
+                  <Insight text="This pattern existed before this relationship — the jealousy over your friend flirting with your last girlfriend was the same mechanism." />
                 </div>
               </Card>
               <Card>
                 <p className="text-white/50 text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-3">Why it hits you specifically</p>
                 <div className="flex flex-col gap-3">
                   <Insight text="You are high-achieving and competitive. Your whole identity is built around competence, performance, and being your best. That system works perfectly everywhere except relationships." />
-                  <Insight text="You subconsciously believe: worth = desirability. So when your brain imagines another man, it hears 'another man was chosen → maybe he had more value' — and suddenly this stops being about Ruby and becomes a status threat to your identity." />
+                  <Insight text="You subconsciously believe: worth = desirability. So when your brain imagines another man, it hears 'another man was chosen → maybe he had more value' — and suddenly this stops being about her and becomes a status threat to your identity." />
                   <Insight text="In sports, career, and academics you can work harder and win. Relationships don't follow this model. Your brain hates this lack of control, so it tries to turn love into a competition — and the 'Thailand guy' becomes an imaginary leaderboard." />
                 </div>
               </Card>
@@ -208,10 +207,10 @@ export default function DiaryPage() {
 
               <Card>
                 <div className="flex items-start justify-between gap-4 mb-3">
-                  <p className="text-white/80 text-sm font-semibold">You and Ruby mirrored each other</p>
+                  <p className="text-white/80 text-sm font-semibold">You both mirrored each other</p>
                   <span className="font-[family-name:var(--font-geist-mono)] text-white/20 text-xs shrink-0">04</span>
                 </div>
-                <p className="text-white/50 text-sm leading-relaxed">You both had an unclear early stage and hurt each other unintentionally due to timeline mismatch. You talked to her friend for a few weeks, which damaged her. She hooked up with someone while abroad, which damaged you. Your brain treats your situation as understandable and hers as threatening. That is not hypocrisy — it is human self-protection. But noticing the symmetry is important: this is not about morality. It is about status and security.</p>
+                <p className="text-white/50 text-sm leading-relaxed">You both had an unclear early stage and hurt each other unintentionally due to timeline mismatch. You got close to one of her friends for a few weeks, which damaged her. She hooked up with someone while abroad, which damaged you. Your brain treats your situation as understandable and hers as threatening. That is not hypocrisy — it is human self-protection. But noticing the symmetry is important: this is not about morality. It is about status and security.</p>
               </Card>
 
             </div>
@@ -285,7 +284,7 @@ export default function DiaryPage() {
               <div className="flex flex-col">
                 <Reminder
                   text="She chooses me now, with full knowledge of her past."
-                  sub="That is the only metric that matters."
+                  sub="That is the only metric that matters in this moment."
                 />
                 <Reminder
                   text="My brain is seeking certainty that does not exist."
@@ -301,7 +300,7 @@ export default function DiaryPage() {
                 />
                 <Reminder
                   text="Reassurance helps short-term. Self-trust fixes it permanently."
-                  sub="Don't make her responsible for regulating your nervous system."
+                  sub="Don't make your partner responsible for regulating your nervous system."
                 />
                 <Reminder
                   text="I survived the end of a 3-year relationship and came out better."
@@ -315,72 +314,9 @@ export default function DiaryPage() {
             </Card>
           </section>
 
-          {/* ── Talking to Ruby ────────────────────────────────────────────── */}
-          <section id={SECTIONS[5].id}>
-            <SectionLabel color={SECTIONS[5].color}>Talking to Ruby</SectionLabel>
-            <div className="flex flex-col gap-3">
-
-              <Callout color="violet">
-                <strong className="text-white/90">The key framing:</strong> You are not bringing her a problem she caused. You are bringing her a pattern you discovered in yourself that got triggered. This single distinction changes the entire tone of the conversation.
-              </Callout>
-
-              <Card>
-                <p className="text-white/50 text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-3">How to structure the conversation</p>
-                <div className="flex flex-col gap-4">
-                  <div className="flex gap-3">
-                    <span className="font-[family-name:var(--font-geist-mono)] text-cyan-400 text-xs shrink-0 pt-0.5">1</span>
-                    <div>
-                      <p className="text-white/80 text-sm font-semibold mb-1">Start with appreciation</p>
-                      <p className="text-white/50 text-sm">Tell her that her telling you actually made you trust her more. This is crucial — you don&apos;t want honesty to become punished.</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <span className="font-[family-name:var(--font-geist-mono)] text-cyan-400 text-xs shrink-0 pt-0.5">2</span>
-                    <div>
-                      <p className="text-white/80 text-sm font-semibold mb-1">Take full ownership</p>
-                      <p className="text-white/50 text-sm italic">&quot;This reaction is about me, not about you doing something wrong. You didn&apos;t do anything wrong. It triggered an insecurity pattern in me that I want to work on.&quot;</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <span className="font-[family-name:var(--font-geist-mono)] text-cyan-400 text-xs shrink-0 pt-0.5">3</span>
-                    <div>
-                      <p className="text-white/80 text-sm font-semibold mb-1">Explain the intrusive thoughts simply</p>
-                      <p className="text-white/50 text-sm italic">&quot;I&apos;ve been having intrusive thoughts and comparisons pop up. I know they don&apos;t reflect reality, but they still create anxiety. I&apos;m actively working on not feeding them.&quot;</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <span className="font-[family-name:var(--font-geist-mono)] text-cyan-400 text-xs shrink-0 pt-0.5">4</span>
-                    <div>
-                      <p className="text-white/80 text-sm font-semibold mb-1">Tell her what helps — as a request, not a demand</p>
-                      <p className="text-white/50 text-sm italic">&quot;It helps me when you express that you want to be with me. Not as a responsibility — just so you know it means a lot.&quot;</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <span className="font-[family-name:var(--font-geist-mono)] text-cyan-400 text-xs shrink-0 pt-0.5">5</span>
-                    <div>
-                      <p className="text-white/80 text-sm font-semibold mb-1">Invite teamwork, close with connection</p>
-                      <p className="text-white/50 text-sm italic">&quot;I don&apos;t expect you to fix this. I just want us to feel like we&apos;re on the same team while I work through it.&quot;</p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              <Card>
-                <p className="text-white/50 text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-3">What not to do</p>
-                <div className="flex flex-col gap-2">
-                  <Insight text="Do not ask for sexual or romantic details — they will make the mental movies worse, not better." />
-                  <Insight text="Do not ask comparison questions about him." />
-                  <Insight text="Do not ask for promises about the future." />
-                  <Insight text="Do not seek repeated reassurance — it relieves the symptom but never fixes the mechanism." />
-                </div>
-              </Card>
-
-            </div>
-          </section>
-
           {/* ── Healing timeline ───────────────────────────────────────────── */}
-          <section id={SECTIONS[6].id}>
-            <SectionLabel color={SECTIONS[6].color}>What healing looks like</SectionLabel>
+          <section id={SECTIONS[5].id}>
+            <SectionLabel color={SECTIONS[5].color}>What healing looks like</SectionLabel>
             <Card className="mb-3">
               <p className="text-white/50 text-sm leading-relaxed mb-4">Think of this like recovering from a sprained ankle. You understand the injury, but it still hurts while healing. Your brain is rewiring a threat response — that takes repetition, not insight alone.</p>
               <p className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-4">Important: frequency ≠ failure. Progress = engaging less with each thought, not having fewer thoughts.</p>
@@ -418,7 +354,7 @@ export default function DiaryPage() {
               </div>
             </Card>
             <Callout color="emerald">
-              <strong className="text-white/90">Signs you are moving in the right direction:</strong> You stop wanting details. The mental movie loses emotional intensity. You stop avoiding parties. You stop measuring yourself against imaginary rivals. You feel present with her again.
+              <strong className="text-white/90">Signs you are moving in the right direction:</strong> You stop wanting details. The mental movie loses emotional intensity. You stop avoiding parties. You stop measuring yourself against imaginary rivals. You feel present again.
             </Callout>
           </section>
 
