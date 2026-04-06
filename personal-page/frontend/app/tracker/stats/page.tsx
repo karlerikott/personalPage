@@ -240,6 +240,16 @@ export default function TrackerStats() {
   const calendar   = buildCalendar(trainings, viewDate);
   const target     = parseFloat(targetWeight);
 
+  // Count sessions per type for the viewed month
+  const monthCounts = trainings.reduce<Record<string, number>>((acc, t) => {
+    const d = new Date(t.createdAt);
+    if (d.getFullYear() === viewDate.getFullYear() && d.getMonth() === viewDate.getMonth()) {
+      acc[t.type] = (acc[t.type] ?? 0) + 1;
+    }
+    return acc;
+  }, {});
+  const totalMonth = Object.values(monthCounts).reduce((s, v) => s + v, 0);
+
   return (
     <main className="min-h-screen bg-[#0a0a0a] text-white font-[family-name:var(--font-geist-sans)] px-4 pb-12 pt-8">
       <div className="max-w-3xl mx-auto">
@@ -400,74 +410,93 @@ export default function TrackerStats() {
               {trainings.length === 0 ? (
                 <p className="text-white/30 text-sm">No training entries yet.</p>
               ) : (
-                <>
-                  {/* Day-of-week headers */}
-                  <div className="grid grid-cols-7 gap-1 mb-1">
-                    {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-                      <div key={d} className="text-center text-xs text-white/20 font-[family-name:var(--font-geist-mono)] py-1">
-                        {d}
-                      </div>
-                    ))}
-                  </div>
-                  {/* Weeks */}
-                  {calendar.weeks.map((week, wi) => (
-                    <div key={wi} className="grid grid-cols-7 gap-1 mb-1">
-                      {week.map((cell) => {
-                        const primary = cell.types[0] ?? null;
-                        const multi   = cell.types.length > 1;
-                        const tooltip = cell.types.length > 0
-                          ? `${cell.date} — ${cell.types.join(", ")}`
-                          : cell.date;
-                        return (
-                          <div
-                            key={cell.date}
-                            title={tooltip}
-                            className="relative aspect-square rounded-lg flex items-center justify-center transition-opacity hover:opacity-80"
-                            style={{
-                              backgroundColor: primary
-                                ? (TRAINING_COLORS[primary] ?? "#6b7280") + "33"
-                                : cell.isCurrentMonth && !cell.isFuture
-                                ? "rgba(255,255,255,0.03)"
-                                : "transparent",
-                              border: primary
-                                ? `1px solid ${TRAINING_COLORS[primary] ?? "#6b7280"}66`
-                                : cell.isCurrentMonth && !cell.isFuture
-                                ? "1px solid rgba(255,255,255,0.05)"
-                                : "1px solid transparent",
-                            }}
-                          >
-                            <span
-                              className="text-xs font-medium select-none"
+                <div className="flex gap-6 items-start">
+                  {/* Calendar */}
+                  <div className="flex-1 min-w-0">
+                    {/* Day-of-week headers */}
+                    <div className="grid grid-cols-7 gap-1 mb-1">
+                      {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+                        <div key={d} className="text-center text-xs text-white/20 font-[family-name:var(--font-geist-mono)] py-1">
+                          {d}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Weeks */}
+                    {calendar.weeks.map((week, wi) => (
+                      <div key={wi} className="grid grid-cols-7 gap-1 mb-1">
+                        {week.map((cell) => {
+                          const primary = cell.types[0] ?? null;
+                          const multi   = cell.types.length > 1;
+                          const tooltip = cell.types.length > 0
+                            ? `${cell.date} — ${cell.types.join(", ")}`
+                            : cell.date;
+                          return (
+                            <div
+                              key={cell.date}
+                              title={tooltip}
+                              className="relative aspect-square rounded-lg flex items-center justify-center transition-opacity hover:opacity-80"
                               style={{
-                                color: primary
-                                  ? TRAINING_COLORS[primary]
+                                backgroundColor: primary
+                                  ? (TRAINING_COLORS[primary] ?? "#6b7280") + "33"
                                   : cell.isCurrentMonth && !cell.isFuture
-                                  ? "rgba(255,255,255,0.4)"
-                                  : "rgba(255,255,255,0.1)",
+                                  ? "rgba(255,255,255,0.03)"
+                                  : "transparent",
+                                border: primary
+                                  ? `1px solid ${TRAINING_COLORS[primary] ?? "#6b7280"}66`
+                                  : cell.isCurrentMonth && !cell.isFuture
+                                  ? "1px solid rgba(255,255,255,0.05)"
+                                  : "1px solid transparent",
                               }}
                             >
-                              {cell.day}
-                            </span>
-                            {multi && (
-                              <span className="absolute top-1 right-1 w-1 h-1 rounded-full bg-white/50" />
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))}
-                  {/* Legend */}
-                  <div className="flex flex-wrap gap-4 mt-5">
-                    {Object.entries(TRAINING_COLORS).map(([type, color]) => (
-                      <div key={type} className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color + "33", border: `1px solid ${color}66` }} />
-                        <span className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)]">
-                          {type.charAt(0) + type.slice(1).toLowerCase()}
-                        </span>
+                              <span
+                                className="text-xs font-medium select-none"
+                                style={{
+                                  color: primary
+                                    ? TRAINING_COLORS[primary]
+                                    : cell.isCurrentMonth && !cell.isFuture
+                                    ? "rgba(255,255,255,0.4)"
+                                    : "rgba(255,255,255,0.1)",
+                                }}
+                              >
+                                {cell.day}
+                              </span>
+                              {multi && (
+                                <span className="absolute top-1 right-1 w-1 h-1 rounded-full bg-white/50" />
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     ))}
                   </div>
-                </>
+
+                  {/* Summary */}
+                  <div className="w-36 shrink-0 bg-white/[0.03] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
+                    <p className="font-[family-name:var(--font-geist-mono)] text-white/20 text-xs uppercase tracking-widest">
+                      {calendar.monthLabel.split(" ")[0]}
+                    </p>
+                    {Object.entries(TRAINING_COLORS).map(([type, color]) => {
+                      const count = monthCounts[type] ?? 0;
+                      return (
+                        <div key={type} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: color + "33", border: `1px solid ${color}66` }} />
+                            <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">
+                              {type.charAt(0) + type.slice(1).toLowerCase()}
+                            </span>
+                          </div>
+                          <span className="text-sm font-semibold" style={{ color: count > 0 ? color : "rgba(255,255,255,0.15)" }}>
+                            {count}
+                          </span>
+                        </div>
+                      );
+                    })}
+                    <div className="border-t border-white/5 pt-3 flex items-center justify-between">
+                      <span className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)]">Total</span>
+                      <span className="text-sm font-bold text-white">{totalMonth}</span>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
 
