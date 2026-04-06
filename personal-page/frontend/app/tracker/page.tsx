@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, ReferenceLine,
@@ -98,6 +99,16 @@ function buildCalendar(trainings: TrainingEntry[], viewDate: Date) {
   return { weeks, monthLabel: first.toLocaleDateString("en-GB", { month: "long", year: "numeric" }) };
 }
 
+// ─── Nav sections ────────────────────────────────────────────────────────────
+
+const NAV_SECTIONS = [
+  { id: "weight",   label: "Weight" },
+  { id: "calories", label: "Calories" },
+  { id: "training", label: "Training" },
+] as const;
+
+type SectionId = typeof NAV_SECTIONS[number]["id"];
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function Tracker() {
@@ -106,6 +117,10 @@ export default function Tracker() {
   const [food, setFood]           = useState<FoodEntry[]>([]);
   const [trainings, setTrainings] = useState<TrainingEntry[]>([]);
   const [loading, setLoading]     = useState(true);
+
+  // Active nav section
+  const [activeSection, setActiveSection] = useState<SectionId>("weight");
+  const sectionRefs = useRef<Record<SectionId, HTMLElement | null>>({ weight: null, calories: null, training: null });
 
   // Chart controls
   const [weightRange, setWeightRange] = useState<Range>("all");
@@ -139,6 +154,27 @@ export default function Tracker() {
     if (saved) setTargetWeight(saved);
     refresh();
   }, []);
+
+  // ── Active section via IntersectionObserver ────────────────────────────────
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Pick the section with the greatest intersection ratio that is actually visible
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible.length > 0) {
+          setActiveSection(visible[0].target.id as SectionId);
+        }
+      },
+      { rootMargin: "-30% 0px -60% 0px", threshold: [0, 0.25, 0.5, 1] }
+    );
+    NAV_SECTIONS.forEach(({ id }) => {
+      const el = sectionRefs.current[id];
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [loading]);
 
   async function refresh(which: "all" | "weight" | "food" | "training" = "all") {
     if (which === "all") setLoading(true);
@@ -267,12 +303,49 @@ export default function Tracker() {
   }, {});
   const totalMonth = Object.values(monthCounts).reduce((s, v) => s + v, 0);
 
+  function scrollToSection(id: SectionId) {
+    sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-white font-[family-name:var(--font-geist-sans)] px-4 pb-16 pt-8">
-      <div className="max-w-3xl mx-auto">
+    <main className="min-h-screen bg-[#0a0a0a] text-white font-[family-name:var(--font-geist-sans)] pb-16">
 
-        {/* Header */}
+      {/* ── Sticky navbar ───────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur border-b border-white/5">
+        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+          {/* Branding */}
+          <div className="flex items-center gap-3">
+            <Link href="/" className="text-white/20 hover:text-white/60 transition-colors" aria-label="Back to home">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </Link>
+            <span className="font-[family-name:var(--font-geist-mono)] text-white/40 text-xs tracking-widest uppercase select-none">Tracker</span>
+          </div>
+
+          {/* Section links */}
+          <nav className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-1">
+            {NAV_SECTIONS.map(({ id, label }) => (
+              <button
+                key={id}
+                onClick={() => scrollToSection(id)}
+                className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  activeSection === id
+                    ? "bg-white/10 text-white"
+                    : "text-white/30 hover:text-white/70"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </header>
+
+      <div className="max-w-3xl mx-auto px-4 pt-10">
+
+        {/* Page title */}
         <div className="mb-10">
           <p className="font-[family-name:var(--font-geist-mono)] text-white/30 text-xs tracking-widest uppercase mb-1">Personal Tracker</p>
           <h1 className="text-2xl font-bold">Overview</h1>
@@ -289,7 +362,7 @@ export default function Tracker() {
             </div>
 
             {/* ── Weight ───────────────────────────────────────────────────── */}
-            <section>
+            <section id="weight" ref={(el) => { sectionRefs.current.weight = el; }}>
               <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                 <p className="font-[family-name:var(--font-geist-mono)] text-white/30 text-xs tracking-widest uppercase">Weight (kg)</p>
                 <div className="flex items-center gap-3">
@@ -333,7 +406,7 @@ export default function Tracker() {
             </section>
 
             {/* ── Calories ─────────────────────────────────────────────────── */}
-            <section>
+            <section id="calories" ref={(el) => { sectionRefs.current.calories = el; }}>
               <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                 <p className="font-[family-name:var(--font-geist-mono)] text-white/30 text-xs tracking-widest uppercase">Calorie intake (kcal/day)</p>
                 <RangeSelector value={kcalRange} onChange={setKcalRange} />
@@ -400,7 +473,7 @@ export default function Tracker() {
             </section>
 
             {/* ── Training ─────────────────────────────────────────────────── */}
-            <section>
+            <section id="training" ref={(el) => { sectionRefs.current.training = el; }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
                   <p className="font-[family-name:var(--font-geist-mono)] text-white/30 text-xs tracking-widest uppercase">Training log</p>
@@ -507,6 +580,7 @@ export default function Tracker() {
     </main>
   );
 }
+
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
