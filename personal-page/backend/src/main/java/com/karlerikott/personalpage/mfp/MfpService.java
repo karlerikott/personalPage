@@ -16,7 +16,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -38,21 +37,39 @@ public class MfpService {
     @Value("${mfp.password:}")
     private String password;
 
+    /** Raw session cookie string, e.g. "_session_id=abc123". Used when logged in via Google/OAuth. */
+    @Value("${mfp.session.cookie:}")
+    private String sessionCookie;
+
     public int syncDays(int days) throws Exception {
-        if (username.isBlank() || password.isBlank()) {
-            throw new IllegalStateException("MFP credentials not configured (MFP_USERNAME / MFP_PASSWORD)");
+        if (username.isBlank()) {
+            throw new IllegalStateException("MFP_USERNAME is not set");
         }
 
-        // Create an HttpClient with a cookie jar — handles CSRF and session cookies automatically
-        CookieManager cookieManager = new CookieManager();
-        cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-        HttpClient client = HttpClient.newBuilder()
-                .cookieHandler(cookieManager)
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
+        boolean usingSessionCookie = !sessionCookie.isBlank();
 
-        login(client);
-        log.info("MFP login successful for user: {}", username);
+        HttpClient client;
+        if (usingSessionCookie) {
+            // Cookie provided directly — no login needed
+            client = HttpClient.newBuilder()
+                    .followRedirects(HttpClient.Redirect.NORMAL)
+                    .build();
+            log.info("MFP: using provided session cookie for user: {}", username);
+        } else {
+            // Traditional username/password login
+            if (password.isBlank()) {
+                throw new IllegalStateException(
+                        "No MFP auth configured. Set MFP_SESSION_COOKIE (for Google login) or both MFP_USERNAME and MFP_PASSWORD.");
+            }
+            CookieManager cookieManager = new CookieManager();
+            cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+            client = HttpClient.newBuilder()
+                    .cookieHandler(cookieManager)
+                    .followRedirects(HttpClient.Redirect.NORMAL)
+                    .build();
+            login(client);
+            log.info("MFP: password login successful for user: {}", username);
+        }
 
         int imported = 0;
         LocalDate today = LocalDate.now(ZoneOffset.UTC);
@@ -67,7 +84,7 @@ public class MfpService {
             }
 
             try {
-                MfpDiaryResponse diary = fetchDiary(client, dateStr);
+                MfpDiaryResponse diary = fetchDiary(client, dateStr, usingSessionCookie ? sessionCookie : null);
                 if (diary == null || diary.totals() == null || diary.totals().calories() <= 0) {
                     log.debug("MFP: no data for {}", dateStr);
                     continue;
@@ -96,7 +113,7 @@ public class MfpService {
     }
 
     private void login(HttpClient client) throws Exception {
-        // Step 1: load the login page to get the CSRF token
+        // Step 1: load login page to get CSRF token
         HttpRequest pageRequest = HttpRequest.newBuilder()
                 .uri(URI.create("https://www.myfitnesspal.com/"))
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
@@ -124,23 +141,24 @@ public class MfpService {
 
         HttpResponse<String> loginResponse = client.send(loginRequest, HttpResponse.BodyHandlers.ofString());
 
-        // After login MFP redirects to home; if still on login page, credentials are wrong
         if (loginResponse.uri().toString().contains("user_sessions")
                 || loginResponse.body().contains("Incorrect username or password")) {
             throw new IllegalStateException("MFP login failed — check MFP_USERNAME and MFP_PASSWORD");
         }
     }
 
-    private MfpDiaryResponse fetchDiary(HttpClient client, String date) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder()
+    private MfpDiaryResponse fetchDiary(HttpClient client, String date, String cookieHeader) throws Exception {
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                 .uri(URI.create("https://www.myfitnesspal.com/food/diary/" + username + ".json?date=" + date))
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
                 .header("Accept", "application/json")
-                .header("X-Requested-With", "XMLHttpRequest")
-                .GET()
-                .build();
+                .header("X-Requested-With", "XMLHttpRequest");
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (cookieHeader != null) {
+            requestBuilder.header("Cookie", cookieHeader);
+        }
+
+        HttpResponse<String> response = client.send(requestBuilder.GET().build(), HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) {
             log.warn("MFP: diary request returned {} for date {}", response.statusCode(), date);
@@ -149,7 +167,7 @@ public class MfpService {
 
         String body = response.body();
         if (!body.trim().startsWith("{")) {
-            log.warn("MFP: diary response is not JSON for date {} (got HTML — session may have expired)", date);
+            log.warn("MFP: diary response is not JSON for {} — session cookie may be expired", date);
             return null;
         }
 
@@ -157,15 +175,12 @@ public class MfpService {
     }
 
     private String extractCsrfToken(String html) {
-        // Try meta tag format: <meta name="csrf-token" content="...">
         Matcher meta = Pattern.compile("name=\"csrf-token\"[^>]+content=\"([^\"]+)\"").matcher(html);
         if (meta.find()) return meta.group(1);
 
-        // Try reversed attribute order
         Matcher meta2 = Pattern.compile("content=\"([^\"]+)\"[^>]+name=\"csrf-token\"").matcher(html);
         if (meta2.find()) return meta2.group(1);
 
-        // Try hidden input format: <input name="authenticity_token" value="...">
         Matcher input = Pattern.compile("name=\"authenticity_token\"[^>]+value=\"([^\"]+)\"").matcher(html);
         if (input.find()) return input.group(1);
 
@@ -180,7 +195,6 @@ public class MfpService {
         List<String> items = new ArrayList<>();
         for (MfpDiaryResponse.MfpMeal meal : diary.diaryMeals()) {
             if (meal.diaryMealFoods() == null || meal.diaryMealFoods().isEmpty()) continue;
-            // Take first food item from each meal as a summary
             meal.diaryMealFoods().stream()
                     .findFirst()
                     .map(MfpDiaryResponse.MfpFood::displayName)
