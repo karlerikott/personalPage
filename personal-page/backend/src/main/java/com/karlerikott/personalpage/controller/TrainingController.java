@@ -3,6 +3,8 @@ package com.karlerikott.personalpage.controller;
 import com.karlerikott.personalpage.domain.Training;
 import com.karlerikott.personalpage.domain.TrainingType;
 import com.karlerikott.personalpage.service.TrainingService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,10 +17,14 @@ public class TrainingController {
 
     private final TrainingService service;
 
-    record TrainingRequest(TrainingType type, String description) {}
+    record TrainingRequest(
+            @NotNull(message = "type must not be null")
+            TrainingType type,
+            String description
+    ) {}
 
     @PostMapping
-    public ApiResponse<Training> create(@RequestBody TrainingRequest request) {
+    public ApiResponse<Training> create(@Valid @RequestBody TrainingRequest request) {
         return ApiResponse.ok(service.save(request.type(), request.description()));
     }
 
