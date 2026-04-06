@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface FoodIntakeRepository extends JpaRepository<FoodIntake, Long> {
     List<FoodIntake> findAllByOrderByCreatedAtDesc();
+    boolean existsByMfpId(String mfpId);
 }

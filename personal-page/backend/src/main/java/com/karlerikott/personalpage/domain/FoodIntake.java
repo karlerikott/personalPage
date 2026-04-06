@@ -32,8 +32,14 @@ public class FoodIntake {
     @Column(nullable = false)
     private Instant createdAt;
 
+    /** Set for entries imported from MyFitnessPal (value = YYYY-MM-DD date string) */
+    @Column(name = "mfp_id")
+    private String mfpId;
+
     @PrePersist
     void prePersist() {
-        this.createdAt = Instant.now();
+        if (this.createdAt == null) {
+            this.createdAt = Instant.now();
+        }
     }
 }

@@ -16,6 +16,8 @@ export default function Tracker() {
   // Food form
   const [kcal, setKcal] = useState("");
   const [foodDesc, setFoodDesc] = useState("");
+  const [mfpSyncing, setMfpSyncing] = useState(false);
+  const [mfpMsg, setMfpMsg] = useState("");
 
   // Training form
   const [trainingType, setTrainingType] = useState<string>(TRAINING_TYPES[0]);
@@ -27,6 +29,24 @@ export default function Tracker() {
   function resetFeedback() {
     setSuccess("");
     setError("");
+  }
+
+  async function syncMfp() {
+    setMfpSyncing(true);
+    setMfpMsg("");
+    try {
+      const res = await fetch("/api/mfp/sync?days=30", { method: "POST" });
+      const json = await res.json();
+      if (res.ok) {
+        const n = json.data?.imported ?? 0;
+        setMfpMsg(n > 0 ? `${n} day${n === 1 ? "" : "s"} imported from MFP.` : "Already up to date.");
+      } else {
+        setMfpMsg(json.error ?? "Sync failed.");
+      }
+    } catch {
+      setMfpMsg("Network error.");
+    }
+    setMfpSyncing(false);
   }
 
   async function submitFood(e: React.FormEvent) {
@@ -124,6 +144,24 @@ export default function Tracker() {
         {/* Food form */}
         {tab === "food" && (
           <form onSubmit={submitFood} className="flex flex-col gap-4">
+            {/* MFP sync */}
+            <div className="flex items-center justify-between bg-white/[0.03] border border-white/5 rounded-lg px-4 py-3">
+              <div>
+                <p className="text-white/60 text-sm font-medium">MyFitnessPal</p>
+                {mfpMsg && <p className="text-white/30 text-xs mt-0.5">{mfpMsg}</p>}
+              </div>
+              <button
+                type="button"
+                onClick={syncMfp}
+                disabled={mfpSyncing}
+                className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white border border-white/10 hover:border-white/20 px-3 py-1.5 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <svg className={`w-3 h-3 ${mfpSyncing ? "animate-spin" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                {mfpSyncing ? "Syncing…" : "Sync last 30 days"}
+              </button>
+            </div>
             <div>
               <label className="text-white/50 text-xs uppercase tracking-widest font-[family-name:var(--font-geist-mono)] block mb-2">
                 Calories (kcal)
