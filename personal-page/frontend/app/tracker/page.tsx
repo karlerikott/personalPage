@@ -576,6 +576,9 @@ export default function Tracker() {
 
           </div>
         )}
+
+        {/* Spacer so the Training section can scroll into the IntersectionObserver active zone */}
+        <div className="h-[50vh]" aria-hidden />
       </div>
     </main>
   );
