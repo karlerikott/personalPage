@@ -425,44 +425,49 @@ export default function TrackerStats() {
                     {calendar.weeks.map((week, wi) => (
                       <div key={wi} className="grid grid-cols-7 gap-1 mb-1">
                         {week.map((cell) => {
-                          const primary = cell.types[0] ?? null;
-                          const multi   = cell.types.length > 1;
-                          const tooltip = cell.types.length > 0
+                          const hasTraining = cell.types.length > 0;
+                          const tooltip = hasTraining
                             ? `${cell.date} — ${cell.types.join(", ")}`
                             : cell.date;
                           return (
                             <div
                               key={cell.date}
                               title={tooltip}
-                              className="relative aspect-square rounded-lg flex items-center justify-center transition-opacity hover:opacity-80"
+                              className="rounded-lg p-1.5 flex flex-col gap-1 min-h-[52px] transition-opacity hover:opacity-80"
                               style={{
-                                backgroundColor: primary
-                                  ? (TRAINING_COLORS[primary] ?? "#6b7280") + "33"
-                                  : cell.isCurrentMonth && !cell.isFuture
+                                backgroundColor: cell.isCurrentMonth && !cell.isFuture
                                   ? "rgba(255,255,255,0.03)"
                                   : "transparent",
-                                border: primary
-                                  ? `1px solid ${TRAINING_COLORS[primary] ?? "#6b7280"}66`
-                                  : cell.isCurrentMonth && !cell.isFuture
+                                border: cell.isCurrentMonth && !cell.isFuture
                                   ? "1px solid rgba(255,255,255,0.05)"
                                   : "1px solid transparent",
                               }}
                             >
                               <span
-                                className="text-xs font-medium select-none"
+                                className="text-xs font-medium select-none leading-none"
                                 style={{
-                                  color: primary
-                                    ? TRAINING_COLORS[primary]
+                                  color: hasTraining
+                                    ? "rgba(255,255,255,0.7)"
                                     : cell.isCurrentMonth && !cell.isFuture
-                                    ? "rgba(255,255,255,0.4)"
-                                    : "rgba(255,255,255,0.1)",
+                                    ? "rgba(255,255,255,0.3)"
+                                    : "rgba(255,255,255,0.08)",
                                 }}
                               >
                                 {cell.day}
                               </span>
-                              {multi && (
-                                <span className="absolute top-1 right-1 w-1 h-1 rounded-full bg-white/50" />
-                              )}
+                              {cell.types.map((type) => (
+                                <div
+                                  key={type}
+                                  className="rounded px-1 py-0.5 text-[9px] font-semibold truncate leading-none font-[family-name:var(--font-geist-mono)]"
+                                  style={{
+                                    backgroundColor: (TRAINING_COLORS[type] ?? "#6b7280") + "33",
+                                    color: TRAINING_COLORS[type] ?? "#6b7280",
+                                    border: `1px solid ${TRAINING_COLORS[type] ?? "#6b7280"}55`,
+                                  }}
+                                >
+                                  {type.charAt(0) + type.slice(1).toLowerCase()}
+                                </div>
+                              ))}
                             </div>
                           );
                         })}
