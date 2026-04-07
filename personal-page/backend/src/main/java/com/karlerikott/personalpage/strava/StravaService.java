@@ -107,7 +107,7 @@ public class StravaService {
                     .stravaId(activity.id())
                     .createdAt(Instant.parse(activity.startDate()))
                     .durationSeconds(activity.movingTime() > 0 ? activity.movingTime() : null)
-                    .caloriesBurnt(activity.calories() != null && activity.calories() > 0 ? (int) Math.round(activity.calories()) : null)
+                    .caloriesBurnt(activity.kilojoules() != null && activity.kilojoules() > 0 ? (int) Math.round(activity.kilojoules() * 0.239) : null)
                     .build();
             trainingRepository.save(training);
             imported++;
