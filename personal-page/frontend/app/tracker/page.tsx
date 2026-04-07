@@ -18,7 +18,7 @@ type Range = "week" | "month" | "year" | "all";
 
 const TRAINING_TYPES = ["PADEL", "GYM", "RUNNING", "BIKE", "SWIMMING"] as const;
 const TRAINING_COLORS: Record<string, string> = {
-  PADEL: "#10b981", GYM: "#3b82f6", RUNNING: "#f97316",
+  PADEL: "#0b7a75", GYM: "#3b82f6", RUNNING: "#f97316",
   BIKE: "#eab308", SWIMMING: "#06b6d4",
 };
 const RANGES: { label: string; value: Range }[] = [
@@ -309,10 +309,10 @@ export default function Tracker() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-white font-[family-name:var(--font-geist-sans)] pb-16">
+    <main className="min-h-screen bg-[#161032] text-white font-[family-name:var(--font-geist-sans)] pb-16">
 
       {/* ── Sticky navbar ───────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur border-b border-white/5">
+      <header className="sticky top-0 z-50 bg-[#161032]/90 backdrop-blur border-b border-white/5">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           {/* Branding */}
           <div className="flex items-center gap-3">
@@ -368,7 +368,7 @@ export default function Tracker() {
                 <div className="flex items-center gap-3">
                   <input type="number" step="0.1" value={targetWeight} onChange={(e) => handleTargetWeight(e.target.value)}
                     placeholder="Goal kg"
-                    className="w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-white placeholder-white/20 focus:outline-none focus:border-emerald-500/50 text-xs" />
+                    className="w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-white placeholder-white/20 focus:outline-none focus:border-[#0b7a75]/50 text-xs" />
                   <RangeSelector value={weightRange} onChange={setWeightRange} />
                 </div>
               </div>
@@ -382,7 +382,7 @@ export default function Tracker() {
                   className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-white/60 hover:text-white transition-colors disabled:opacity-40">
                   {weightSaving ? "Saving…" : "Log weight"}
                 </button>
-                {weightMsg && <span className={`text-xs ${weightMsg === "Saved!" ? "text-emerald-400" : "text-red-400"}`}>{weightMsg}</span>}
+                {weightMsg && <span className={`text-xs ${weightMsg === "Saved!" ? "text-[#0b7a75]" : "text-red-400"}`}>{weightMsg}</span>}
               </form>
 
               {weightData.length < 2 ? <p className="text-white/30 text-sm">Not enough data for this range.</p> : (
@@ -392,14 +392,14 @@ export default function Tracker() {
                     <XAxis dataKey="ts" scale="time" type="number" domain={["auto", "auto"]} tick={false} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false}
                       domain={[(dataMin: number) => Math.floor(Math.min(dataMin, !isNaN(target) && target > 0 ? target : dataMin) - 1), "auto"]} />
-                    <Tooltip contentStyle={{ backgroundColor: "#1a1a1a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
-                      labelStyle={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }} itemStyle={{ color: "#10b981" }}
+                    <Tooltip contentStyle={{ backgroundColor: "#1d1a3a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
+                      labelStyle={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }} itemStyle={{ color: "#0b7a75" }}
                       labelFormatter={(ts) => new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} />
                     {!isNaN(target) && target > 0 && (
                       <ReferenceLine y={target} stroke="rgba(255,255,255,0.25)" strokeDasharray="6 3"
                         label={{ value: `Goal: ${target} kg`, fill: "rgba(255,255,255,0.3)", fontSize: 10, position: "insideTopRight" }} />
                     )}
-                    <Line type="monotone" dataKey="weight" stroke="#10b981" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="weight" stroke="#0b7a75" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
                   </LineChart>
                 </ResponsiveContainer>
               )}
@@ -431,7 +431,7 @@ export default function Tracker() {
                   </svg>
                   {mfpSyncing ? "Syncing…" : "MFP"}
                 </button>
-                {foodMsg && <span className={`text-xs w-full ${foodMsg.startsWith("MFP") ? "text-white/40" : foodMsg === "Saved!" ? "text-emerald-400" : "text-red-400"}`}>{foodMsg}</span>}
+                {foodMsg && <span className={`text-xs w-full ${foodMsg.startsWith("MFP") ? "text-white/40" : foodMsg === "Saved!" ? "text-[#0b7a75]" : "text-red-400"}`}>{foodMsg}</span>}
               </form>
 
               <div className="flex gap-6 items-start">
@@ -442,9 +442,9 @@ export default function Tracker() {
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                         <XAxis dataKey="date" tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
                         <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                        <Tooltip contentStyle={{ backgroundColor: "#1a1a1a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
-                          labelStyle={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }} itemStyle={{ color: "#10b981" }} />
-                        <Bar dataKey="kcal" fill="#10b981" radius={[4, 4, 0, 0]} />
+                        <Tooltip contentStyle={{ backgroundColor: "#1d1a3a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
+                          labelStyle={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }} itemStyle={{ color: "#0b7a75" }} />
+                        <Bar dataKey="kcal" fill="#0b7a75" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   )}
@@ -455,11 +455,11 @@ export default function Tracker() {
                     <div key={iso} className="flex flex-col gap-1">
                       <div className="flex items-center justify-between">
                         <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">{label} <span className="text-white/20">{day}</span></span>
-                        <span className={`text-xs font-semibold ${kcal > 0 ? "text-emerald-400" : "text-white/15"}`}>{kcal > 0 ? kcal.toLocaleString() : "—"}</span>
+                        <span className={`text-xs font-semibold ${kcal > 0 ? "text-[#0b7a75]" : "text-white/15"}`}>{kcal > 0 ? kcal.toLocaleString() : "—"}</span>
                       </div>
                       {kcal > 0 && (
                         <div className="h-0.5 rounded-full bg-white/5 overflow-hidden">
-                          <div className="h-full rounded-full bg-emerald-500/50" style={{ width: `${Math.round((kcal / weekMax) * 100)}%` }} />
+                          <div className="h-full rounded-full bg-[#0b7a75]/50" style={{ width: `${Math.round((kcal / weekMax) * 100)}%` }} />
                         </div>
                       )}
                     </div>
@@ -513,7 +513,7 @@ export default function Tracker() {
                   className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-white/60 hover:text-white transition-colors disabled:opacity-40">
                   {trainingSaving ? "Saving…" : "Log training"}
                 </button>
-                {trainingMsg && <span className={`text-xs ${trainingMsg === "Saved!" ? "text-emerald-400" : "text-red-400"}`}>{trainingMsg}</span>}
+                {trainingMsg && <span className={`text-xs ${trainingMsg === "Saved!" ? "text-[#0b7a75]" : "text-red-400"}`}>{trainingMsg}</span>}
               </form>
 
               {trainings.length === 0 ? <p className="text-white/30 text-sm">No training entries yet.</p> : (

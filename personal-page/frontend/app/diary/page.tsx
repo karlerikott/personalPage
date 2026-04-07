@@ -15,12 +15,12 @@ type SectionId = "situation" | "diagnosis" | "shifts" | "thoughts" | "reminders"
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SECTIONS: Section[] = [
-  { id: "situation",  label: "Situation",   color: "text-violet-400" },
-  { id: "diagnosis",  label: "Diagnosis",   color: "text-blue-400" },
-  { id: "shifts",     label: "Mindset",     color: "text-emerald-400" },
-  { id: "thoughts",   label: "Thoughts",    color: "text-amber-400" },
-  { id: "reminders",  label: "Reminders",   color: "text-rose-400" },
-  { id: "timeline",   label: "Timeline",    color: "text-indigo-400" },
+  { id: "situation",  label: "Situation",   color: "text-[#826c7f]" },
+  { id: "diagnosis",  label: "Diagnosis",   color: "text-[#b4cded]" },
+  { id: "shifts",     label: "Mindset",     color: "text-[#0b7a75]" },
+  { id: "thoughts",   label: "Thoughts",    color: "text-[#ceb992]" },
+  { id: "reminders",  label: "Reminders",   color: "text-[#ceb992]" },
+  { id: "timeline",   label: "Timeline",    color: "text-[#826c7f]" },
 ];
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -50,11 +50,11 @@ function Insight({ text }: { text: string }) {
   );
 }
 
-function Callout({ children, color = "violet" }: { children: React.ReactNode; color?: string }) {
-  const border = color === "violet" ? "border-violet-500/20 bg-violet-500/5" :
-                 color === "emerald" ? "border-emerald-500/20 bg-emerald-500/5" :
-                 color === "amber"   ? "border-amber-500/20 bg-amber-500/5" :
-                 color === "rose"    ? "border-rose-500/20 bg-rose-500/5" :
+function Callout({ children, color = "mauve" }: { children: React.ReactNode; color?: string }) {
+  const border = color === "mauve"   ? "border-[#826c7f]/30 bg-[#826c7f]/8" :
+                 color === "teal"    ? "border-[#0b7a75]/30 bg-[#0b7a75]/8" :
+                 color === "sand"    ? "border-[#ceb992]/30 bg-[#ceb992]/8" :
+                 color === "blue"    ? "border-[#b4cded]/30 bg-[#b4cded]/8" :
                  "border-white/10 bg-white/5";
   return (
     <div className={`border rounded-lg px-4 py-3 text-sm leading-relaxed text-white/80 ${border}`}>
@@ -67,7 +67,7 @@ function Reminder({ text, sub }: { text: string; sub?: string }) {
   return (
     <div className="flex gap-3 items-start py-2 border-b border-white/5 last:border-0">
       <div className="w-5 h-5 rounded-full border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
-        <div className="w-1.5 h-1.5 rounded-full bg-rose-400/60" />
+        <div className="w-1.5 h-1.5 rounded-full bg-[#ceb992]/60" />
       </div>
       <div>
         <p className="text-white/80 text-sm">{text}</p>
@@ -134,10 +134,10 @@ export default function DiaryPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-white font-[family-name:var(--font-geist-sans)] pb-24">
+    <main className="min-h-screen bg-[#161032] text-white font-[family-name:var(--font-geist-sans)] pb-24">
 
       {/* ── Sticky section nav ──────────────────────────────────────────── */}
-      <div className="sticky top-[73px] z-40 bg-[#0a0a0a]/90 backdrop-blur border-b border-white/5">
+      <div className="sticky top-[73px] z-40 bg-[#161032]/90 backdrop-blur border-b border-white/5">
         <div className="max-w-2xl mx-auto px-4">
           <div className="flex items-center gap-1 overflow-x-auto py-2 scrollbar-none">
             {SECTIONS.map(({ id, label }) => (
@@ -175,7 +175,7 @@ export default function DiaryPage() {
               <p className="text-white/60 text-sm leading-relaxed mb-4">
                 You and your partner have been getting very close. She confessed she hooked up with someone while travelling — before you were together. The confession triggered anger, then deep sadness, intrusive mental images, and a desire to avoid parties to escape jealousy triggers.
               </p>
-              <Callout color="violet">
+              <Callout color="mauve">
                 <strong className="text-white/90">The important thing to remember:</strong> You were not betrayed. She did nothing wrong. She did something honest — she told you voluntarily and said she wants to work through it together. Your brain reacted as if a betrayal happened, but the situation is not a betrayal. That mismatch is the whole problem.
               </Callout>
             </Card>
@@ -202,7 +202,7 @@ export default function DiaryPage() {
                   <Insight text="In sports, career, and academics you can work harder and win. Relationships don't follow this model. Your brain hates this lack of control, so it tries to turn love into a competition — and the 'Thailand guy' becomes an imaginary leaderboard." />
                 </div>
               </Card>
-              <Callout color="emerald">
+              <Callout color="teal">
                 <strong className="text-white/90">The core fear, said plainly:</strong> &quot;If I am not the best, I am replaceable.&quot; That belief serves you in competitive contexts. It is toxic in relationships. Because in love, people don&apos;t stay because you are the best option — they stay because they are emotionally bonded. Different systems entirely.
               </Callout>
             </div>
@@ -231,8 +231,8 @@ export default function DiaryPage() {
                     <p className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">Old belief</p>
                     <p className="text-white/60 text-sm">Special = no competition ever existed</p>
                   </div>
-                  <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3">
-                    <p className="text-emerald-400/70 text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">New belief</p>
+                  <div className="bg-[#0b7a75]/5 border border-[#0b7a75]/20 rounded-lg p-3">
+                    <p className="text-[#0b7a75] text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">New belief</p>
                     <p className="text-white/80 text-sm">Special = chosen despite competition existing</p>
                   </div>
                 </div>
@@ -249,8 +249,8 @@ export default function DiaryPage() {
                     <p className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">Wrong goal</p>
                     <p className="text-white/60 text-sm">Feel certain she will always choose me</p>
                   </div>
-                  <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3">
-                    <p className="text-emerald-400/70 text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">Real goal</p>
+                  <div className="bg-[#0b7a75]/5 border border-[#0b7a75]/20 rounded-lg p-3">
+                    <p className="text-[#0b7a75] text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">Real goal</p>
                     <p className="text-white/80 text-sm">Feel safe even without certainty</p>
                   </div>
                 </div>
@@ -272,7 +272,7 @@ export default function DiaryPage() {
             <SectionLabel color={SECTIONS[3].color}>How to handle intrusive thoughts</SectionLabel>
             <div className="flex flex-col gap-3">
 
-              <Callout color="amber">
+              <Callout color="sand">
                 <strong className="text-white/90">Do NOT ask for details.</strong> Your instinct says: if I know everything, my brain will stop guessing and I&apos;ll feel relief. But it works the opposite way. Details give your brain HD imagery to obsess over. You cannot unknow details once learned. The urge to know more is an anxiety compulsion — it feels like solving, but it feeds the obsession.
               </Callout>
 
@@ -291,15 +291,15 @@ export default function DiaryPage() {
                 <div className="bg-white/[0.03] border border-white/10 rounded-lg p-4 flex flex-col gap-2">
                   <p className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">When the image appears</p>
                   <div className="flex gap-3 items-center">
-                    <span className="font-[family-name:var(--font-geist-mono)] text-violet-400 text-xs shrink-0">1.</span>
+                    <span className="font-[family-name:var(--font-geist-mono)] text-[#826c7f] text-xs shrink-0">1.</span>
                     <p className="text-white/70 text-sm">Label it mentally: <em>&quot;Intrusive jealousy thought.&quot;</em></p>
                   </div>
                   <div className="flex gap-3 items-center">
-                    <span className="font-[family-name:var(--font-geist-mono)] text-violet-400 text-xs shrink-0">2.</span>
+                    <span className="font-[family-name:var(--font-geist-mono)] text-[#826c7f] text-xs shrink-0">2.</span>
                     <p className="text-white/70 text-sm">Do nothing else. No arguing, no replacing, no analyzing, no reassuring.</p>
                   </div>
                   <div className="flex gap-3 items-center">
-                    <span className="font-[family-name:var(--font-geist-mono)] text-violet-400 text-xs shrink-0">3.</span>
+                    <span className="font-[family-name:var(--font-geist-mono)] text-[#826c7f] text-xs shrink-0">3.</span>
                     <p className="text-white/70 text-sm">Return attention to what you were doing.</p>
                   </div>
                 </div>
@@ -313,14 +313,14 @@ export default function DiaryPage() {
                     <p className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">Old question</p>
                     <p className="text-white/60 text-sm italic">&quot;Am I better than him?&quot;</p>
                   </div>
-                  <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3">
-                    <p className="text-emerald-400/70 text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">New question</p>
+                  <div className="bg-[#0b7a75]/5 border border-[#0b7a75]/20 rounded-lg p-3">
+                    <p className="text-[#0b7a75] text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">New question</p>
                     <p className="text-white/80 text-sm italic">&quot;Are we emotionally connected and choosing each other now?&quot;</p>
                   </div>
                 </div>
               </Card>
 
-              <Callout color="amber">
+              <Callout color="sand">
                 Stop avoiding parties. Avoidance teaches your brain: &quot;Yes, this is dangerous.&quot; Each time you avoid a trigger, the anxiety gets a little bigger. Return gradually. Let the discomfort be there. Your nervous system needs to learn that parties are safe — and it only learns that by going.
               </Callout>
 
@@ -404,7 +404,7 @@ export default function DiaryPage() {
                 />
               </div>
             </Card>
-            <Callout color="emerald">
+            <Callout color="teal">
               <strong className="text-white/90">Signs you are moving in the right direction:</strong> You stop wanting details. The mental movie loses emotional intensity. You stop avoiding parties. You stop measuring yourself against imaginary rivals. You feel present again.
             </Callout>
           </section>
