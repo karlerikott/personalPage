@@ -515,7 +515,7 @@ export default function Tracker() {
                       <div className="flex items-center justify-between">
                         <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">{label} <span className="text-white/20">{day}</span></span>
                         <div className="flex flex-col items-end gap-0.5">
-                          <span className={`text-xs font-semibold leading-none ${kcal > 0 ? "text-[#02c39a]" : "text-white/15"}`}>{kcal > 0 ? kcal.toLocaleString() : "—"}</span>
+                          <span className={`text-xs font-semibold leading-none ${kcal > 0 ? "text-[#02c39a]" : "text-white/25"}`}>{kcal > 0 ? kcal.toLocaleString() : "0"}</span>
                           {kcalBurnt > 0 && <span className="text-[10px] leading-none font-semibold" style={{ color: "#f97316aa" }}>−{kcalBurnt.toLocaleString()}</span>}
                         </div>
                       </div>
