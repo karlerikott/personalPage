@@ -637,15 +637,15 @@ export default function Tracker() {
                         const count = monthCounts[type] ?? 0;
                         const kcal  = monthCaloriesByType[type] ?? 0;
                         return (
-                          <div key={type} className="flex flex-col gap-0.5">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: color + "33", border: `1px solid ${color}66` }} />
-                                <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">{type.charAt(0) + type.slice(1).toLowerCase()}</span>
-                              </div>
-                              <span className="text-sm font-semibold" style={{ color: count > 0 ? color : "rgba(255,255,255,0.15)" }}>{count}</span>
+                          <div key={type} className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: color + "33", border: `1px solid ${color}66` }} />
+                              <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">{type.charAt(0) + type.slice(1).toLowerCase()}</span>
                             </div>
-                            {kcal > 0 && <p className="text-[10px] text-white/25 font-[family-name:var(--font-geist-mono)] text-right">{kcal.toLocaleString()} kcal</p>}
+                            <div className="flex flex-col items-end gap-0.5">
+                              <span className="text-sm font-semibold leading-none" style={{ color: count > 0 ? color : "rgba(255,255,255,0.15)" }}>{count}</span>
+                              {kcal > 0 && <span className="text-[10px] text-white/25 font-[family-name:var(--font-geist-mono)] leading-none">{kcal.toLocaleString()}</span>}
+                            </div>
                           </div>
                         );
                       })}
@@ -674,15 +674,15 @@ export default function Tracker() {
                         const count = week7Counts[type] ?? 0;
                         const kcal  = week7CaloriesByType[type] ?? 0;
                         return (
-                          <div key={type} className="flex flex-col gap-0.5">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: color + "33", border: `1px solid ${color}66` }} />
-                                <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">{type.charAt(0) + type.slice(1).toLowerCase()}</span>
-                              </div>
-                              <span className="text-sm font-semibold" style={{ color: count > 0 ? color : "rgba(255,255,255,0.15)" }}>{count}</span>
+                          <div key={type} className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: color + "33", border: `1px solid ${color}66` }} />
+                              <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">{type.charAt(0) + type.slice(1).toLowerCase()}</span>
                             </div>
-                            {kcal > 0 && <p className="text-[10px] text-white/25 font-[family-name:var(--font-geist-mono)] text-right">{kcal.toLocaleString()} kcal</p>}
+                            <div className="flex flex-col items-end gap-0.5">
+                              <span className="text-sm font-semibold leading-none" style={{ color: count > 0 ? color : "rgba(255,255,255,0.15)" }}>{count}</span>
+                              {kcal > 0 && <span className="text-[10px] text-white/25 font-[family-name:var(--font-geist-mono)] leading-none">{kcal.toLocaleString()}</span>}
+                            </div>
                           </div>
                         );
                       })}
