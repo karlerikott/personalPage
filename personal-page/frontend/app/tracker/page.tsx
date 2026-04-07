@@ -484,8 +484,8 @@ export default function Tracker() {
                       <ReferenceLine yAxisId="weight" y={target} stroke="rgba(255,255,255,0.25)" strokeDasharray="6 3"
                         label={{ value: `Goal: ${target} kg`, fill: "rgba(255,255,255,0.3)", fontSize: 10, position: "insideTopRight" }} />
                     )}
-                    <Bar yAxisId="kcal" dataKey="consumed" fill="#02c39a" fillOpacity={0.15} radius={[2, 2, 0, 0]} />
-                    <Bar yAxisId="kcal" dataKey="burnt" fill="#f97316" fillOpacity={0.15} radius={[2, 2, 0, 0]} />
+                    <Line yAxisId="kcal" type="monotone" dataKey="consumed" stroke="#02c39a" strokeWidth={1.5} strokeOpacity={0.4} dot={false} connectNulls />
+                    <Line yAxisId="kcal" type="monotone" dataKey="burnt" stroke="#f97316" strokeWidth={1.5} strokeOpacity={0.4} dot={false} connectNulls />
                     <Line yAxisId="weight" type="monotone" dataKey="weight" stroke="#02c39a" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
                   </ComposedChart>
                 </ResponsiveContainer>
