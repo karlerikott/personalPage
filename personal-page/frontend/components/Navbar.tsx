@@ -15,7 +15,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 w-full z-10 px-8 py-5 flex justify-between items-center border-b border-white/5 bg-[#161032]/90 backdrop-blur-sm">
+    <nav className="fixed top-0 w-full z-10 px-8 py-5 flex justify-between items-center border-b border-white/5 bg-[#250902]/90 backdrop-blur-sm">
       <Link href="/" className="font-[family-name:var(--font-geist-mono)] text-sm text-white/40 tracking-widest uppercase">
         KEO
       </Link>

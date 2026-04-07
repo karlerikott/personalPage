@@ -31,6 +31,12 @@ public class Training {
     @Column(name = "strava_id")
     private Long stravaId;
 
+    @Column
+    private Integer durationSeconds;
+
+    @Column
+    private Integer caloriesBurnt;
+
     @PrePersist
     void prePersist() {
         if (this.createdAt == null) {

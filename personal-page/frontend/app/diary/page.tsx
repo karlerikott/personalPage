@@ -15,12 +15,12 @@ type SectionId = "situation" | "diagnosis" | "shifts" | "thoughts" | "reminders"
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SECTIONS: Section[] = [
-  { id: "situation",  label: "Situation",   color: "text-[#826c7f]" },
-  { id: "diagnosis",  label: "Diagnosis",   color: "text-[#b4cded]" },
-  { id: "shifts",     label: "Mindset",     color: "text-[#0b7a75]" },
-  { id: "thoughts",   label: "Thoughts",    color: "text-[#ceb992]" },
-  { id: "reminders",  label: "Reminders",   color: "text-[#ceb992]" },
-  { id: "timeline",   label: "Timeline",    color: "text-[#826c7f]" },
+  { id: "situation",  label: "Situation",   color: "text-[#800e13]" },
+  { id: "diagnosis",  label: "Diagnosis",   color: "text-[#800e13]" },
+  { id: "shifts",     label: "Mindset",     color: "text-[#ad2831]" },
+  { id: "thoughts",   label: "Thoughts",    color: "text-[#ad2831]" },
+  { id: "reminders",  label: "Reminders",   color: "text-[#ad2831]" },
+  { id: "timeline",   label: "Timeline",    color: "text-[#800e13]" },
 ];
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -51,10 +51,10 @@ function Insight({ text }: { text: string }) {
 }
 
 function Callout({ children, color = "mauve" }: { children: React.ReactNode; color?: string }) {
-  const border = color === "mauve"   ? "border-[#826c7f]/30 bg-[#826c7f]/8" :
-                 color === "teal"    ? "border-[#0b7a75]/30 bg-[#0b7a75]/8" :
-                 color === "sand"    ? "border-[#ceb992]/30 bg-[#ceb992]/8" :
-                 color === "blue"    ? "border-[#b4cded]/30 bg-[#b4cded]/8" :
+  const border = color === "mauve"   ? "border-[#800e13]/30 bg-[#800e13]/8" :
+                 color === "teal"    ? "border-[#ad2831]/30 bg-[#ad2831]/8" :
+                 color === "sand"    ? "border-[#ad2831]/30 bg-[#ad2831]/8" :
+                 color === "blue"    ? "border-[#800e13]/30 bg-[#800e13]/8" :
                  "border-white/10 bg-white/5";
   return (
     <div className={`border rounded-lg px-4 py-3 text-sm leading-relaxed text-white/80 ${border}`}>
@@ -67,7 +67,7 @@ function Reminder({ text, sub }: { text: string; sub?: string }) {
   return (
     <div className="flex gap-3 items-start py-2 border-b border-white/5 last:border-0">
       <div className="w-5 h-5 rounded-full border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
-        <div className="w-1.5 h-1.5 rounded-full bg-[#ceb992]/60" />
+        <div className="w-1.5 h-1.5 rounded-full bg-[#ad2831]/60" />
       </div>
       <div>
         <p className="text-white/80 text-sm">{text}</p>
@@ -130,14 +130,17 @@ export default function DiaryPage() {
   }, []);
 
   function scrollToSection(id: SectionId) {
-    sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const el = sectionRefs.current[id];
+    if (!el) return;
+    const offset = 130; // layout nav 73px + section nav ~40px + 16px gap
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - offset, behavior: "smooth" });
   }
 
   return (
-    <main className="min-h-screen bg-[#161032] text-white font-[family-name:var(--font-geist-sans)] pb-24">
+    <main className="min-h-screen bg-[#250902] text-white font-[family-name:var(--font-geist-sans)] pb-24">
 
       {/* ── Sticky section nav ──────────────────────────────────────────── */}
-      <div className="sticky top-[73px] z-40 bg-[#161032]/90 backdrop-blur border-b border-white/5">
+      <div className="sticky top-[73px] z-40 bg-[#250902]/90 backdrop-blur border-b border-white/5">
         <div className="max-w-2xl mx-auto px-4">
           <div className="flex items-center gap-1 overflow-x-auto py-2 scrollbar-none">
             {SECTIONS.map(({ id, label }) => (
@@ -231,8 +234,8 @@ export default function DiaryPage() {
                     <p className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">Old belief</p>
                     <p className="text-white/60 text-sm">Special = no competition ever existed</p>
                   </div>
-                  <div className="bg-[#0b7a75]/5 border border-[#0b7a75]/20 rounded-lg p-3">
-                    <p className="text-[#0b7a75] text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">New belief</p>
+                  <div className="bg-[#ad2831]/5 border border-[#ad2831]/20 rounded-lg p-3">
+                    <p className="text-[#ad2831] text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">New belief</p>
                     <p className="text-white/80 text-sm">Special = chosen despite competition existing</p>
                   </div>
                 </div>
@@ -249,8 +252,8 @@ export default function DiaryPage() {
                     <p className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">Wrong goal</p>
                     <p className="text-white/60 text-sm">Feel certain she will always choose me</p>
                   </div>
-                  <div className="bg-[#0b7a75]/5 border border-[#0b7a75]/20 rounded-lg p-3">
-                    <p className="text-[#0b7a75] text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">Real goal</p>
+                  <div className="bg-[#ad2831]/5 border border-[#ad2831]/20 rounded-lg p-3">
+                    <p className="text-[#ad2831] text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">Real goal</p>
                     <p className="text-white/80 text-sm">Feel safe even without certainty</p>
                   </div>
                 </div>
@@ -291,15 +294,15 @@ export default function DiaryPage() {
                 <div className="bg-white/[0.03] border border-white/10 rounded-lg p-4 flex flex-col gap-2">
                   <p className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">When the image appears</p>
                   <div className="flex gap-3 items-center">
-                    <span className="font-[family-name:var(--font-geist-mono)] text-[#826c7f] text-xs shrink-0">1.</span>
+                    <span className="font-[family-name:var(--font-geist-mono)] text-[#800e13] text-xs shrink-0">1.</span>
                     <p className="text-white/70 text-sm">Label it mentally: <em>&quot;Intrusive jealousy thought.&quot;</em></p>
                   </div>
                   <div className="flex gap-3 items-center">
-                    <span className="font-[family-name:var(--font-geist-mono)] text-[#826c7f] text-xs shrink-0">2.</span>
+                    <span className="font-[family-name:var(--font-geist-mono)] text-[#800e13] text-xs shrink-0">2.</span>
                     <p className="text-white/70 text-sm">Do nothing else. No arguing, no replacing, no analyzing, no reassuring.</p>
                   </div>
                   <div className="flex gap-3 items-center">
-                    <span className="font-[family-name:var(--font-geist-mono)] text-[#826c7f] text-xs shrink-0">3.</span>
+                    <span className="font-[family-name:var(--font-geist-mono)] text-[#800e13] text-xs shrink-0">3.</span>
                     <p className="text-white/70 text-sm">Return attention to what you were doing.</p>
                   </div>
                 </div>
@@ -313,8 +316,8 @@ export default function DiaryPage() {
                     <p className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">Old question</p>
                     <p className="text-white/60 text-sm italic">&quot;Am I better than him?&quot;</p>
                   </div>
-                  <div className="bg-[#0b7a75]/5 border border-[#0b7a75]/20 rounded-lg p-3">
-                    <p className="text-[#0b7a75] text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">New question</p>
+                  <div className="bg-[#ad2831]/5 border border-[#ad2831]/20 rounded-lg p-3">
+                    <p className="text-[#ad2831] text-xs font-[family-name:var(--font-geist-mono)] uppercase tracking-widest mb-1">New question</p>
                     <p className="text-white/80 text-sm italic">&quot;Are we emotionally connected and choosing each other now?&quot;</p>
                   </div>
                 </div>

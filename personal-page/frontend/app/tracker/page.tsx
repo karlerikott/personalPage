@@ -11,14 +11,14 @@ import {
 
 interface WeightEntry   { id: number; weightKg: number; createdAt: string; }
 interface FoodEntry     { id: number; kcal: number; description: string; createdAt: string; }
-interface TrainingEntry { id: number; type: string; description: string | null; createdAt: string; }
+interface TrainingEntry { id: number; type: string; description: string | null; createdAt: string; durationSeconds: number | null; caloriesBurnt: number | null; }
 type Range = "week" | "month" | "year" | "all";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const TRAINING_TYPES = ["PADEL", "GYM", "RUNNING", "BIKE", "SWIMMING"] as const;
 const TRAINING_COLORS: Record<string, string> = {
-  PADEL: "#0b7a75", GYM: "#3b82f6", RUNNING: "#f97316",
+  PADEL: "#ad2831", GYM: "#3b82f6", RUNNING: "#f97316",
   BIKE: "#eab308", SWIMMING: "#06b6d4",
 };
 const RANGES: { label: string; value: Range }[] = [
@@ -143,6 +143,8 @@ export default function Tracker() {
   // Training form
   const [trainingType, setTrainingType] = useState<string>("GYM");
   const [trainingDesc, setTrainingDesc] = useState("");
+  const [trainingDuration, setTrainingDuration] = useState("");
+  const [trainingCalories, setTrainingCalories] = useState("");
   const [trainingSaving, setTrainingSaving] = useState(false);
   const [trainingMsg, setTrainingMsg]   = useState("");
   const [stravaSyncing, setStravaSyncing] = useState(false);
@@ -223,9 +225,14 @@ export default function Tracker() {
     setTrainingSaving(true); setTrainingMsg("");
     const res = await fetch("/api/tracker/training", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: trainingType, description: trainingDesc || null }),
+      body: JSON.stringify({
+        type: trainingType,
+        description: trainingDesc || null,
+        durationSeconds: trainingDuration ? Math.round(Number(trainingDuration) * 60) : null,
+        caloriesBurnt: trainingCalories ? Number(trainingCalories) : null,
+      }),
     });
-    if (res.ok) { setTrainingDesc(""); setTrainingMsg("Saved!"); await refresh("training"); }
+    if (res.ok) { setTrainingDesc(""); setTrainingDuration(""); setTrainingCalories(""); setTrainingMsg("Saved!"); await refresh("training"); }
     else { const j = await res.json(); setTrainingMsg(j.error ?? "Failed."); }
     setTrainingSaving(false);
     setTimeout(() => setTrainingMsg(""), 3000);
@@ -295,24 +302,37 @@ export default function Tracker() {
   const calendar  = buildCalendar(trainings, viewDate);
   const target    = parseFloat(targetWeight);
 
-  const monthCounts = trainings.reduce<Record<string, number>>((acc, t) => {
+  const monthTrainings = trainings.filter((t) => {
     const d = new Date(t.createdAt);
-    if (d.getFullYear() === viewDate.getFullYear() && d.getMonth() === viewDate.getMonth())
-      acc[t.type] = (acc[t.type] ?? 0) + 1;
+    return d.getFullYear() === viewDate.getFullYear() && d.getMonth() === viewDate.getMonth();
+  });
+  const monthCounts = monthTrainings.reduce<Record<string, number>>((acc, t) => {
+    acc[t.type] = (acc[t.type] ?? 0) + 1;
     return acc;
   }, {});
-  const totalMonth = Object.values(monthCounts).reduce((s, v) => s + v, 0);
+  const totalMonth         = Object.values(monthCounts).reduce((s, v) => s + v, 0);
+  const monthCalories      = monthTrainings.reduce((s, t) => s + (t.caloriesBurnt ?? 0), 0);
+  const monthDurationSec   = monthTrainings.reduce((s, t) => s + (t.durationSeconds ?? 0), 0);
+
+  function fmtDuration(totalSec: number) {
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  }
 
   function scrollToSection(id: SectionId) {
-    sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const el = sectionRefs.current[id];
+    if (!el) return;
+    const offset = 72; // sticky nav h-14 (56px) + 16px gap
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - offset, behavior: "smooth" });
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <main className="min-h-screen bg-[#161032] text-white font-[family-name:var(--font-geist-sans)] pb-16">
+    <main className="min-h-screen bg-[#250902] text-white font-[family-name:var(--font-geist-sans)] pb-16">
 
       {/* ── Sticky navbar ───────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-[#161032]/90 backdrop-blur border-b border-white/5">
+      <header className="sticky top-0 z-50 bg-[#250902]/90 backdrop-blur border-b border-white/5">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           {/* Branding */}
           <div className="flex items-center gap-3">
@@ -368,7 +388,7 @@ export default function Tracker() {
                 <div className="flex items-center gap-3">
                   <input type="number" step="0.1" value={targetWeight} onChange={(e) => handleTargetWeight(e.target.value)}
                     placeholder="Goal kg"
-                    className="w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-white placeholder-white/20 focus:outline-none focus:border-[#0b7a75]/50 text-xs" />
+                    className="w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-white placeholder-white/20 focus:outline-none focus:border-[#ad2831]/50 text-xs" />
                   <RangeSelector value={weightRange} onChange={setWeightRange} />
                 </div>
               </div>
@@ -382,7 +402,7 @@ export default function Tracker() {
                   className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-white/60 hover:text-white transition-colors disabled:opacity-40">
                   {weightSaving ? "Saving…" : "Log weight"}
                 </button>
-                {weightMsg && <span className={`text-xs ${weightMsg === "Saved!" ? "text-[#0b7a75]" : "text-red-400"}`}>{weightMsg}</span>}
+                {weightMsg && <span className={`text-xs ${weightMsg === "Saved!" ? "text-[#ad2831]" : "text-red-400"}`}>{weightMsg}</span>}
               </form>
 
               {weightData.length < 2 ? <p className="text-white/30 text-sm">Not enough data for this range.</p> : (
@@ -392,14 +412,14 @@ export default function Tracker() {
                     <XAxis dataKey="ts" scale="time" type="number" domain={["auto", "auto"]} tick={false} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false}
                       domain={[(dataMin: number) => Math.floor(Math.min(dataMin, !isNaN(target) && target > 0 ? target : dataMin) - 1), "auto"]} />
-                    <Tooltip contentStyle={{ backgroundColor: "#1d1a3a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
-                      labelStyle={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }} itemStyle={{ color: "#0b7a75" }}
+                    <Tooltip contentStyle={{ backgroundColor: "#2a0a0e", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
+                      labelStyle={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }} itemStyle={{ color: "#ad2831" }}
                       labelFormatter={(ts) => new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} />
                     {!isNaN(target) && target > 0 && (
                       <ReferenceLine y={target} stroke="rgba(255,255,255,0.25)" strokeDasharray="6 3"
                         label={{ value: `Goal: ${target} kg`, fill: "rgba(255,255,255,0.3)", fontSize: 10, position: "insideTopRight" }} />
                     )}
-                    <Line type="monotone" dataKey="weight" stroke="#0b7a75" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="weight" stroke="#ad2831" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
                   </LineChart>
                 </ResponsiveContainer>
               )}
@@ -431,7 +451,7 @@ export default function Tracker() {
                   </svg>
                   {mfpSyncing ? "Syncing…" : "MFP"}
                 </button>
-                {foodMsg && <span className={`text-xs w-full ${foodMsg.startsWith("MFP") ? "text-white/40" : foodMsg === "Saved!" ? "text-[#0b7a75]" : "text-red-400"}`}>{foodMsg}</span>}
+                {foodMsg && <span className={`text-xs w-full ${foodMsg.startsWith("MFP") ? "text-white/40" : foodMsg === "Saved!" ? "text-[#ad2831]" : "text-red-400"}`}>{foodMsg}</span>}
               </form>
 
               <div className="flex gap-6 items-start">
@@ -442,9 +462,9 @@ export default function Tracker() {
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                         <XAxis dataKey="date" tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
                         <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                        <Tooltip contentStyle={{ backgroundColor: "#1d1a3a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
-                          labelStyle={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }} itemStyle={{ color: "#0b7a75" }} />
-                        <Bar dataKey="kcal" fill="#0b7a75" radius={[4, 4, 0, 0]} />
+                        <Tooltip contentStyle={{ backgroundColor: "#2a0a0e", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
+                          labelStyle={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }} itemStyle={{ color: "#ad2831" }} />
+                        <Bar dataKey="kcal" fill="#ad2831" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   )}
@@ -455,11 +475,11 @@ export default function Tracker() {
                     <div key={iso} className="flex flex-col gap-1">
                       <div className="flex items-center justify-between">
                         <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">{label} <span className="text-white/20">{day}</span></span>
-                        <span className={`text-xs font-semibold ${kcal > 0 ? "text-[#0b7a75]" : "text-white/15"}`}>{kcal > 0 ? kcal.toLocaleString() : "—"}</span>
+                        <span className={`text-xs font-semibold ${kcal > 0 ? "text-[#ad2831]" : "text-white/15"}`}>{kcal > 0 ? kcal.toLocaleString() : "—"}</span>
                       </div>
                       {kcal > 0 && (
                         <div className="h-0.5 rounded-full bg-white/5 overflow-hidden">
-                          <div className="h-full rounded-full bg-[#0b7a75]/50" style={{ width: `${Math.round((kcal / weekMax) * 100)}%` }} />
+                          <div className="h-full rounded-full bg-[#ad2831]/50" style={{ width: `${Math.round((kcal / weekMax) * 100)}%` }} />
                         </div>
                       )}
                     </div>
@@ -496,7 +516,7 @@ export default function Tracker() {
               </div>
 
               {/* Log training */}
-              <form onSubmit={saveTraining} className="flex flex-wrap items-center gap-2 mb-5">
+              <form onSubmit={saveTraining} className="flex flex-col gap-2 mb-5">
                 <div className="flex flex-wrap gap-1.5">
                   {TRAINING_TYPES.map((t) => (
                     <button key={t} type="button" onClick={() => setTrainingType(t)}
@@ -506,14 +526,22 @@ export default function Tracker() {
                     </button>
                   ))}
                 </div>
-                <input type="text" value={trainingDesc} onChange={(e) => setTrainingDesc(e.target.value)}
-                  placeholder="Note (optional)"
-                  className="flex-1 min-w-[120px] bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-white/20 focus:outline-none focus:border-white/30 text-sm" />
-                <button type="submit" disabled={trainingSaving}
-                  className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-white/60 hover:text-white transition-colors disabled:opacity-40">
-                  {trainingSaving ? "Saving…" : "Log training"}
-                </button>
-                {trainingMsg && <span className={`text-xs ${trainingMsg === "Saved!" ? "text-[#0b7a75]" : "text-red-400"}`}>{trainingMsg}</span>}
+                <div className="flex flex-wrap items-center gap-2">
+                  <input type="number" min="1" value={trainingDuration} onChange={(e) => setTrainingDuration(e.target.value)}
+                    placeholder="Duration (min)"
+                    className="w-36 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-white/20 focus:outline-none focus:border-white/30 text-sm" required />
+                  <input type="number" min="1" value={trainingCalories} onChange={(e) => setTrainingCalories(e.target.value)}
+                    placeholder="Calories burnt"
+                    className="w-36 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-white/20 focus:outline-none focus:border-white/30 text-sm" required />
+                  <input type="text" value={trainingDesc} onChange={(e) => setTrainingDesc(e.target.value)}
+                    placeholder="Note (optional)"
+                    className="flex-1 min-w-[120px] bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-white/20 focus:outline-none focus:border-white/30 text-sm" />
+                  <button type="submit" disabled={trainingSaving}
+                    className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-white/60 hover:text-white transition-colors disabled:opacity-40">
+                    {trainingSaving ? "Saving…" : "Log training"}
+                  </button>
+                  {trainingMsg && <span className={`text-xs ${trainingMsg === "Saved!" ? "text-[#ad2831]" : "text-red-400"}`}>{trainingMsg}</span>}
+                </div>
               </form>
 
               {trainings.length === 0 ? <p className="text-white/30 text-sm">No training entries yet.</p> : (
@@ -569,6 +597,18 @@ export default function Tracker() {
                       <span className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)]">Total</span>
                       <span className="text-sm font-bold text-white">{totalMonth}</span>
                     </div>
+                    {monthCalories > 0 && (
+                      <div className="border-t border-white/5 pt-3 flex items-center justify-between">
+                        <span className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)]">kcal</span>
+                        <span className="text-sm font-semibold text-white/60">{monthCalories.toLocaleString()}</span>
+                      </div>
+                    )}
+                    {monthDurationSec > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)]">Time</span>
+                        <span className="text-sm font-semibold text-white/60">{fmtDuration(monthDurationSec)}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

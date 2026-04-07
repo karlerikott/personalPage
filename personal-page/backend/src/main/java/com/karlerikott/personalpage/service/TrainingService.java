@@ -14,10 +14,12 @@ public class TrainingService {
 
     private final TrainingRepository repository;
 
-    public Training save(TrainingType type, String description) {
+    public Training save(TrainingType type, String description, Integer durationSeconds, Integer caloriesBurnt) {
         return repository.save(Training.builder()
                 .type(type)
                 .description(description)
+                .durationSeconds(durationSeconds)
+                .caloriesBurnt(caloriesBurnt)
                 .build());
     }
 

@@ -29,7 +29,7 @@ export default function DiaryLogin() {
   }
 
   return (
-    <main className="min-h-screen bg-[#161032] flex items-center justify-center px-4">
+    <main className="min-h-screen bg-[#250902] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <p className="font-[family-name:var(--font-geist-mono)] text-white/30 text-xs tracking-widest uppercase mb-6">
           Personal
@@ -48,7 +48,7 @@ export default function DiaryLogin() {
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-3 bg-[#826c7f] hover:bg-[#826c7f]/80 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors text-sm"
+            className="px-6 py-3 bg-[#800e13] hover:bg-[#800e13]/80 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors text-sm"
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>

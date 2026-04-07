@@ -20,12 +20,14 @@ public class TrainingController {
     record TrainingRequest(
             @NotNull(message = "type must not be null")
             TrainingType type,
-            String description
+            String description,
+            Integer durationSeconds,
+            Integer caloriesBurnt
     ) {}
 
     @PostMapping
     public ApiResponse<Training> create(@Valid @RequestBody TrainingRequest request) {
-        return ApiResponse.ok(service.save(request.type(), request.description()));
+        return ApiResponse.ok(service.save(request.type(), request.description(), request.durationSeconds(), request.caloriesBurnt()));
     }
 
     @GetMapping

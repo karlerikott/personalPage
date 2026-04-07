@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function TrackerLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <nav className="fixed top-0 w-full z-10 px-8 py-5 flex items-center justify-between border-b border-white/5 bg-[#161032]/90 backdrop-blur-sm">
+      <nav className="fixed top-0 w-full z-10 px-8 py-5 flex items-center justify-between border-b border-white/5 bg-[#250902]/90 backdrop-blur-sm">
         <Link
           href="/"
           className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-sm"
