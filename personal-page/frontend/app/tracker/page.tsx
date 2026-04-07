@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ComposedChart, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, ReferenceLine,
 } from "recharts";
 
@@ -294,6 +294,24 @@ export default function Tracker() {
     ts: new Date(w.createdAt).getTime(), weight: w.weightKg,
   }));
 
+  // Build day-keyed lookup for calories consumed and burnt
+  const kcalConsumedByDay = food.reduce<Record<string, number>>((acc, f) => {
+    const d = toIsoDay(f.createdAt); acc[d] = (acc[d] ?? 0) + f.kcal; return acc;
+  }, {});
+  const kcalBurntByDay = trainings.reduce<Record<string, number>>((acc, t) => {
+    const d = toIsoDay(t.createdAt); acc[d] = (acc[d] ?? 0) + (t.caloriesBurnt ?? 0); return acc;
+  }, {});
+
+  // Merge calorie data onto weight data points
+  const weightChartData = weightData.map((w) => {
+    const day = new Date(w.ts).toISOString().slice(0, 10);
+    return {
+      ...w,
+      consumed: kcalConsumedByDay[day] ?? null,
+      burnt:    kcalBurntByDay[day]    ?? null,
+    };
+  });
+
   const kcalByDay = Object.entries(
     filterByRange(food, kcalRange).reduce<Record<string, number>>((acc, e) => {
       const d = toIsoDay(e.createdAt); acc[d] = (acc[d] ?? 0) + e.kcal; return acc;
@@ -446,20 +464,30 @@ export default function Tracker() {
 
               {weightData.length < 2 ? <p className="text-white/30 text-sm">Not enough data for this range.</p> : (
                 <ResponsiveContainer width="100%" height={240}>
-                  <LineChart data={weightData}>
+                  <ComposedChart data={weightChartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                     <XAxis dataKey="ts" scale="time" type="number" domain={["auto", "auto"]} tick={false} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false}
+                    <YAxis yAxisId="weight" tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }} axisLine={false} tickLine={false}
                       domain={[(dataMin: number) => Math.floor(Math.min(dataMin, !isNaN(target) && target > 0 ? target : dataMin) - 1), "auto"]} />
+                    <YAxis yAxisId="kcal" orientation="right" tick={{ fill: "rgba(255,255,255,0.15)", fontSize: 10 }} axisLine={false} tickLine={false}
+                      tickFormatter={(v) => `${(v / 1000).toFixed(1)}k`} />
                     <Tooltip contentStyle={{ backgroundColor: "#021b26", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
-                      labelStyle={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }} itemStyle={{ color: "#02c39a" }}
-                      labelFormatter={(ts) => new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} />
+                      labelStyle={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }}
+                      labelFormatter={(ts) => new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                      formatter={(value: number, name: string) => {
+                        if (name === "weight") return [`${value} kg`, "Weight"];
+                        if (name === "consumed") return [value.toLocaleString() + " kcal", "Consumed"];
+                        if (name === "burnt") return [value.toLocaleString() + " kcal", "Burnt"];
+                        return [value, name];
+                      }} />
                     {!isNaN(target) && target > 0 && (
-                      <ReferenceLine y={target} stroke="rgba(255,255,255,0.25)" strokeDasharray="6 3"
+                      <ReferenceLine yAxisId="weight" y={target} stroke="rgba(255,255,255,0.25)" strokeDasharray="6 3"
                         label={{ value: `Goal: ${target} kg`, fill: "rgba(255,255,255,0.3)", fontSize: 10, position: "insideTopRight" }} />
                     )}
-                    <Line type="monotone" dataKey="weight" stroke="#02c39a" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
-                  </LineChart>
+                    <Bar yAxisId="kcal" dataKey="consumed" fill="#02c39a" fillOpacity={0.15} radius={[2, 2, 0, 0]} />
+                    <Bar yAxisId="kcal" dataKey="burnt" fill="#f97316" fillOpacity={0.15} radius={[2, 2, 0, 0]} />
+                    <Line yAxisId="weight" type="monotone" dataKey="weight" stroke="#02c39a" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                  </ComposedChart>
                 </ResponsiveContainer>
               )}
             </section>
