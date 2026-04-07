@@ -318,6 +318,10 @@ export default function Tracker() {
     acc[t.type] = (acc[t.type] ?? 0) + 1;
     return acc;
   }, {});
+  const monthCaloriesByType = monthTrainings.reduce<Record<string, number>>((acc, t) => {
+    acc[t.type] = (acc[t.type] ?? 0) + (t.caloriesBurnt ?? 0);
+    return acc;
+  }, {});
   const totalMonth         = Object.values(monthCounts).reduce((s, v) => s + v, 0);
   const monthCalories      = monthTrainings.reduce((s, t) => s + (t.caloriesBurnt ?? 0), 0);
   const monthDurationSec   = monthTrainings.reduce((s, t) => s + (t.durationSeconds ?? 0), 0);
@@ -326,6 +330,9 @@ export default function Tracker() {
   const week7Trainings = trainings.filter((t) => new Date(t.createdAt) >= week7Cutoff);
   const week7Counts    = week7Trainings.reduce<Record<string, number>>((acc, t) => {
     acc[t.type] = (acc[t.type] ?? 0) + 1; return acc;
+  }, {});
+  const week7CaloriesByType = week7Trainings.reduce<Record<string, number>>((acc, t) => {
+    acc[t.type] = (acc[t.type] ?? 0) + (t.caloriesBurnt ?? 0); return acc;
   }, {});
   const week7Total     = Object.values(week7Counts).reduce((s, v) => s + v, 0);
   const week7Calories  = week7Trainings.reduce((s, t) => s + (t.caloriesBurnt ?? 0), 0);
@@ -609,13 +616,17 @@ export default function Tracker() {
                       <p className="font-[family-name:var(--font-geist-mono)] text-white/20 text-xs uppercase tracking-widest">{calendar.monthLabel.split(" ")[0]}</p>
                       {Object.entries(TRAINING_COLORS).map(([type, color]) => {
                         const count = monthCounts[type] ?? 0;
+                        const kcal  = monthCaloriesByType[type] ?? 0;
                         return (
-                          <div key={type} className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: color + "33", border: `1px solid ${color}66` }} />
-                              <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">{type.charAt(0) + type.slice(1).toLowerCase()}</span>
+                          <div key={type} className="flex flex-col gap-0.5">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: color + "33", border: `1px solid ${color}66` }} />
+                                <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">{type.charAt(0) + type.slice(1).toLowerCase()}</span>
+                              </div>
+                              <span className="text-sm font-semibold" style={{ color: count > 0 ? color : "rgba(255,255,255,0.15)" }}>{count}</span>
                             </div>
-                            <span className="text-sm font-semibold" style={{ color: count > 0 ? color : "rgba(255,255,255,0.15)" }}>{count}</span>
+                            {kcal > 0 && <p className="text-[10px] text-white/25 font-[family-name:var(--font-geist-mono)] text-right">{kcal.toLocaleString()} kcal</p>}
                           </div>
                         );
                       })}
@@ -642,13 +653,17 @@ export default function Tracker() {
                       <p className="font-[family-name:var(--font-geist-mono)] text-white/20 text-xs uppercase tracking-widest">7 days</p>
                       {Object.entries(TRAINING_COLORS).map(([type, color]) => {
                         const count = week7Counts[type] ?? 0;
+                        const kcal  = week7CaloriesByType[type] ?? 0;
                         return (
-                          <div key={type} className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: color + "33", border: `1px solid ${color}66` }} />
-                              <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">{type.charAt(0) + type.slice(1).toLowerCase()}</span>
+                          <div key={type} className="flex flex-col gap-0.5">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: color + "33", border: `1px solid ${color}66` }} />
+                                <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">{type.charAt(0) + type.slice(1).toLowerCase()}</span>
+                              </div>
+                              <span className="text-sm font-semibold" style={{ color: count > 0 ? color : "rgba(255,255,255,0.15)" }}>{count}</span>
                             </div>
-                            <span className="text-sm font-semibold" style={{ color: count > 0 ? color : "rgba(255,255,255,0.15)" }}>{count}</span>
+                            {kcal > 0 && <p className="text-[10px] text-white/25 font-[family-name:var(--font-geist-mono)] text-right">{kcal.toLocaleString()} kcal</p>}
                           </div>
                         );
                       })}
