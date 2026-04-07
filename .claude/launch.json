@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Frontend (Next.js)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000,
+      "cwd": "personal-page/frontend"
+    },
+    {
+      "name": "Backend (Spring Boot)",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "mvnw.cmd", "spring-boot:run", "-Dspring-boot.run.profiles=local"],
+      "port": 8080,
+      "cwd": "personal-page/backend"
+    }
+  ]
+}
