@@ -7,6 +7,5 @@ public record StravaActivitySummary(
         String name,
         @JsonProperty("sport_type") String sportType,
         @JsonProperty("start_date") String startDate,
-        @JsonProperty("moving_time") int movingTime,
-        Double kilojoules
+        @JsonProperty("moving_time") int movingTime
 ) {}

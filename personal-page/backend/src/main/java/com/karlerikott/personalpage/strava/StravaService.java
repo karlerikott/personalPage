@@ -101,13 +101,15 @@ public class StravaService {
                 continue;
             }
 
+            Integer calories = fetchCalories(accessToken, activity.id());
+
             Training training = Training.builder()
                     .type(type)
                     .description(activity.name())
                     .stravaId(activity.id())
                     .createdAt(Instant.parse(activity.startDate()))
                     .durationSeconds(activity.movingTime() > 0 ? activity.movingTime() : null)
-                    .caloriesBurnt(activity.kilojoules() != null && activity.kilojoules() > 0 ? (int) Math.round(activity.kilojoules() * 0.239) : null)
+                    .caloriesBurnt(calories)
                     .build();
             trainingRepository.save(training);
             imported++;
@@ -115,6 +117,22 @@ public class StravaService {
 
         log.info("Strava sync complete: {} imported out of {} total activities", imported, all.size());
         return imported;
+    }
+
+    private Integer fetchCalories(String accessToken, long activityId) {
+        try {
+            StravaActivityDetail detail = restClient.get()
+                    .uri("https://www.strava.com/api/v3/activities/" + activityId)
+                    .header("Authorization", "Bearer " + accessToken)
+                    .retrieve()
+                    .body(StravaActivityDetail.class);
+            if (detail != null && detail.calories() != null && detail.calories() > 0) {
+                return (int) Math.round(detail.calories());
+            }
+        } catch (Exception e) {
+            log.warn("Failed to fetch calories for activity {}: {}", activityId, e.getMessage());
+        }
+        return null;
     }
 
     private TrainingType mapSportType(String sportType) {
