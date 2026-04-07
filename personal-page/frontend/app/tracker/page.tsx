@@ -127,6 +127,7 @@ export default function Tracker() {
   const [kcalRange, setKcalRange]     = useState<Range>("month");
   const [targetWeight, setTargetWeight] = useState<string>("92");
   const [calendarOffset, setCalendarOffset] = useState(0);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
   // Weight form
   const [weightInput, setWeightInput]   = useState("");
@@ -293,13 +294,20 @@ export default function Tracker() {
     const d = new Date(today); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - i);
     const iso = d.toISOString().slice(0, 10);
     const kcal = food.filter((f) => toIsoDay(f.createdAt) === iso).reduce((s, f) => s + f.kcal, 0);
-    return { iso, label: d.toLocaleDateString("en-GB", { weekday: "short" }), day: d.getDate(), kcal };
+    const kcalBurnt = trainings.filter((t) => toIsoDay(t.createdAt) === iso).reduce((s, t) => s + (t.caloriesBurnt ?? 0), 0);
+    return { iso, label: d.toLocaleDateString("en-GB", { weekday: "short" }), day: d.getDate(), kcal, kcalBurnt };
   });
   const weekTotal = weekDays.reduce((s, d) => s + d.kcal, 0);
   const weekMax   = Math.max(...weekDays.map((d) => d.kcal), 1);
 
   const viewDate  = new Date(today.getFullYear(), today.getMonth() + calendarOffset, 1);
   const calendar  = buildCalendar(trainings, viewDate);
+
+  const byDayFull = trainings.reduce<Map<string, TrainingEntry[]>>((m, t) => {
+    const d = toIsoDay(t.createdAt);
+    m.set(d, [...(m.get(d) ?? []), t]);
+    return m;
+  }, new Map());
   const target    = parseFloat(targetWeight);
 
   const monthTrainings = trainings.filter((t) => {
@@ -480,7 +488,7 @@ export default function Tracker() {
                 </div>
                 <div className="w-36 shrink-0 bg-white/[0.03] border border-white/5 rounded-xl p-4 flex flex-col gap-2">
                   <p className="font-[family-name:var(--font-geist-mono)] text-white/20 text-xs uppercase tracking-widest mb-1">This week</p>
-                  {weekDays.map(({ iso, label, day, kcal }) => (
+                  {weekDays.map(({ iso, label, day, kcal, kcalBurnt }) => (
                     <div key={iso} className="flex flex-col gap-1">
                       <div className="flex items-center justify-between">
                         <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">{label} <span className="text-white/20">{day}</span></span>
@@ -489,6 +497,12 @@ export default function Tracker() {
                       {kcal > 0 && (
                         <div className="h-0.5 rounded-full bg-white/5 overflow-hidden">
                           <div className="h-full rounded-full bg-[#ad2831]/50" style={{ width: `${Math.round((kcal / weekMax) * 100)}%` }} />
+                        </div>
+                      )}
+                      {kcalBurnt > 0 && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/20 text-[10px] font-[family-name:var(--font-geist-mono)]">burnt</span>
+                          <span className="text-[10px] font-semibold text-f97316/70" style={{ color: "#f97316aa" }}>{kcalBurnt.toLocaleString()}</span>
                         </div>
                       )}
                     </div>
@@ -566,8 +580,9 @@ export default function Tracker() {
                         {week.map((cell) => {
                           const hasTraining = cell.types.length > 0;
                           return (
-                            <div key={cell.date} title={hasTraining ? `${cell.date} — ${cell.types.join(", ")}` : cell.date}
-                              className="rounded-lg p-1.5 flex flex-col gap-1 min-h-[52px] transition-opacity hover:opacity-80"
+                            <div key={cell.date}
+                              onClick={() => hasTraining ? setSelectedDay(cell.date) : undefined}
+                              className={`rounded-lg p-1.5 flex flex-col gap-1 min-h-[52px] transition-opacity hover:opacity-80 ${hasTraining ? "cursor-pointer" : ""}`}
                               style={{
                                 backgroundColor: cell.isCurrentMonth && !cell.isFuture ? "rgba(255,255,255,0.03)" : "transparent",
                                 border: cell.isCurrentMonth && !cell.isFuture ? "1px solid rgba(255,255,255,0.05)" : "1px solid transparent",
@@ -665,6 +680,59 @@ export default function Tracker() {
         {/* Spacer so the Training section can scroll into the IntersectionObserver active zone */}
         <div className="h-[50vh]" aria-hidden />
       </div>
+
+      {/* ── Training day detail modal ──────────────────────────────────────── */}
+      {selectedDay && (() => {
+        const entries = byDayFull.get(selectedDay) ?? [];
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4"
+            onClick={() => setSelectedDay(null)}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            <div className="relative bg-[#1a0505] border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl"
+              onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-5">
+                <p className="font-[family-name:var(--font-geist-mono)] text-white/40 text-xs tracking-widest uppercase">{selectedDay}</p>
+                <button onClick={() => setSelectedDay(null)} className="text-white/30 hover:text-white transition-colors">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="flex flex-col gap-4">
+                {entries.map((t) => {
+                  const color = TRAINING_COLORS[t.type] ?? "#6b7280";
+                  return (
+                    <div key={t.id} className="flex flex-col gap-2 p-3 rounded-xl" style={{ backgroundColor: color + "11", border: `1px solid ${color}33` }}>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold font-[family-name:var(--font-geist-mono)]" style={{ color }}>{t.type.charAt(0) + t.type.slice(1).toLowerCase()}</span>
+                        {t.description && <span className="text-white/50 text-xs truncate">{t.description}</span>}
+                      </div>
+                      <div className="flex items-center gap-4">
+                        {t.durationSeconds != null && (
+                          <div className="flex items-center gap-1.5">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/30">
+                              <circle cx="12" cy="12" r="10"/><path strokeLinecap="round" d="M12 6v6l4 2"/>
+                            </svg>
+                            <span className="text-white/50 text-xs font-[family-name:var(--font-geist-mono)]">{fmtDuration(t.durationSeconds)}</span>
+                          </div>
+                        )}
+                        {t.caloriesBurnt != null && (
+                          <div className="flex items-center gap-1.5">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/30">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 2c0 6-6 8-6 14a6 6 0 0012 0c0-6-6-8-6-14z"/>
+                            </svg>
+                            <span className="text-white/50 text-xs font-[family-name:var(--font-geist-mono)]">{t.caloriesBurnt.toLocaleString()} kcal</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </main>
   );
 }
