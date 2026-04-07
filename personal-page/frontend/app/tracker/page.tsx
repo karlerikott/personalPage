@@ -314,6 +314,15 @@ export default function Tracker() {
   const monthCalories      = monthTrainings.reduce((s, t) => s + (t.caloriesBurnt ?? 0), 0);
   const monthDurationSec   = monthTrainings.reduce((s, t) => s + (t.durationSeconds ?? 0), 0);
 
+  const week7Cutoff    = new Date(today.getTime() - 7 * 86400000);
+  const week7Trainings = trainings.filter((t) => new Date(t.createdAt) >= week7Cutoff);
+  const week7Counts    = week7Trainings.reduce<Record<string, number>>((acc, t) => {
+    acc[t.type] = (acc[t.type] ?? 0) + 1; return acc;
+  }, {});
+  const week7Total     = Object.values(week7Counts).reduce((s, v) => s + v, 0);
+  const week7Calories  = week7Trainings.reduce((s, t) => s + (t.caloriesBurnt ?? 0), 0);
+  const week7DurSec    = week7Trainings.reduce((s, t) => s + (t.durationSeconds ?? 0), 0);
+
   function fmtDuration(totalSec: number) {
     const h = Math.floor(totalSec / 3600);
     const m = Math.floor((totalSec % 3600) / 60);
@@ -579,36 +588,72 @@ export default function Tracker() {
                       </div>
                     ))}
                   </div>
-                  <div className="w-36 shrink-0 bg-white/[0.03] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
-                    <p className="font-[family-name:var(--font-geist-mono)] text-white/20 text-xs uppercase tracking-widest">{calendar.monthLabel.split(" ")[0]}</p>
-                    {Object.entries(TRAINING_COLORS).map(([type, color]) => {
-                      const count = monthCounts[type] ?? 0;
-                      return (
-                        <div key={type} className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: color + "33", border: `1px solid ${color}66` }} />
-                            <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">{type.charAt(0) + type.slice(1).toLowerCase()}</span>
+                  <div className="flex flex-col gap-3">
+                    {/* Month panel */}
+                    <div className="w-36 shrink-0 bg-white/[0.03] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
+                      <p className="font-[family-name:var(--font-geist-mono)] text-white/20 text-xs uppercase tracking-widest">{calendar.monthLabel.split(" ")[0]}</p>
+                      {Object.entries(TRAINING_COLORS).map(([type, color]) => {
+                        const count = monthCounts[type] ?? 0;
+                        return (
+                          <div key={type} className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: color + "33", border: `1px solid ${color}66` }} />
+                              <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">{type.charAt(0) + type.slice(1).toLowerCase()}</span>
+                            </div>
+                            <span className="text-sm font-semibold" style={{ color: count > 0 ? color : "rgba(255,255,255,0.15)" }}>{count}</span>
                           </div>
-                          <span className="text-sm font-semibold" style={{ color: count > 0 ? color : "rgba(255,255,255,0.15)" }}>{count}</span>
-                        </div>
-                      );
-                    })}
-                    <div className="border-t border-white/5 pt-3 flex items-center justify-between">
-                      <span className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)]">Total</span>
-                      <span className="text-sm font-bold text-white">{totalMonth}</span>
-                    </div>
-                    {monthCalories > 0 && (
+                        );
+                      })}
                       <div className="border-t border-white/5 pt-3 flex items-center justify-between">
-                        <span className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)]">kcal</span>
-                        <span className="text-sm font-semibold text-white/60">{monthCalories.toLocaleString()}</span>
+                        <span className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)]">Total</span>
+                        <span className="text-sm font-bold text-white">{totalMonth}</span>
                       </div>
-                    )}
-                    {monthDurationSec > 0 && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)]">Time</span>
-                        <span className="text-sm font-semibold text-white/60">{fmtDuration(monthDurationSec)}</span>
+                      {monthCalories > 0 && (
+                        <div className="border-t border-white/5 pt-3 flex items-center justify-between">
+                          <span className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)]">kcal</span>
+                          <span className="text-sm font-semibold text-white/60">{monthCalories.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {monthDurationSec > 0 && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)]">Time</span>
+                          <span className="text-sm font-semibold text-white/60">{fmtDuration(monthDurationSec)}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Last 7 days panel */}
+                    <div className="w-36 shrink-0 bg-white/[0.03] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
+                      <p className="font-[family-name:var(--font-geist-mono)] text-white/20 text-xs uppercase tracking-widest">7 days</p>
+                      {Object.entries(TRAINING_COLORS).map(([type, color]) => {
+                        const count = week7Counts[type] ?? 0;
+                        return (
+                          <div key={type} className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: color + "33", border: `1px solid ${color}66` }} />
+                              <span className="text-white/40 text-xs font-[family-name:var(--font-geist-mono)]">{type.charAt(0) + type.slice(1).toLowerCase()}</span>
+                            </div>
+                            <span className="text-sm font-semibold" style={{ color: count > 0 ? color : "rgba(255,255,255,0.15)" }}>{count}</span>
+                          </div>
+                        );
+                      })}
+                      <div className="border-t border-white/5 pt-3 flex items-center justify-between">
+                        <span className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)]">Total</span>
+                        <span className="text-sm font-bold text-white">{week7Total}</span>
                       </div>
-                    )}
+                      {week7Calories > 0 && (
+                        <div className="border-t border-white/5 pt-3 flex items-center justify-between">
+                          <span className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)]">kcal</span>
+                          <span className="text-sm font-semibold text-white/60">{week7Calories.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {week7DurSec > 0 && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/30 text-xs font-[family-name:var(--font-geist-mono)]">Time</span>
+                          <span className="text-sm font-semibold text-white/60">{fmtDuration(week7DurSec)}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
