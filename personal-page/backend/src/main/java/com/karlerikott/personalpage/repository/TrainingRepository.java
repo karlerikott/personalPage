@@ -8,4 +8,5 @@ import java.util.List;
 public interface TrainingRepository extends JpaRepository<Training, Long> {
     List<Training> findAllByOrderByCreatedAtDesc();
     boolean existsByStravaId(Long stravaId);
+    List<Training> findByStravaIdIsNotNullAndCaloriesBurntIsNull();
 }

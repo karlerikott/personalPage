@@ -78,4 +78,17 @@ public class StravaController {
             return ResponseEntity.internalServerError().body(ApiResponse.error("Sync failed: " + e.getMessage()));
         }
     }
+
+    /** Backfill calories for existing Strava activities that are missing them */
+    @PostMapping("/backfill-calories")
+    public ResponseEntity<ApiResponse<Map<String, Integer>>> backfillCalories() {
+        try {
+            int updated = stravaService.backfillCalories();
+            return ResponseEntity.ok(ApiResponse.ok(Map.of("updated", updated)));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(ApiResponse.error("Backfill failed: " + e.getMessage()));
+        }
+    }
 }

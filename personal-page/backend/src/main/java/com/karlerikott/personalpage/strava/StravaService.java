@@ -119,6 +119,25 @@ public class StravaService {
         return imported;
     }
 
+    public int backfillCalories() {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new IllegalStateException("Strava not connected — STRAVA_REFRESH_TOKEN is not set");
+        }
+        String accessToken = getAccessToken();
+        var missing = trainingRepository.findByStravaIdIsNotNullAndCaloriesBurntIsNull();
+        int updated = 0;
+        for (var training : missing) {
+            Integer calories = fetchCalories(accessToken, training.getStravaId());
+            if (calories != null) {
+                training.setCaloriesBurnt(calories);
+                trainingRepository.save(training);
+                updated++;
+            }
+        }
+        log.info("Calorie backfill complete: {}/{} updated", updated, missing.size());
+        return updated;
+    }
+
     private Integer fetchCalories(String accessToken, long activityId) {
         try {
             StravaActivityDetail detail = restClient.get()

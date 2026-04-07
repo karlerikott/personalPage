@@ -150,6 +150,7 @@ export default function Tracker() {
   const [trainingMsg, setTrainingMsg]   = useState("");
   const [stravaSyncing, setStravaSyncing] = useState(false);
   const [stravaMsg, setStravaMsg]       = useState("");
+  const [backfilling, setBackfilling]   = useState(false);
 
   // ── Load data ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -237,6 +238,20 @@ export default function Tracker() {
     else { const j = await res.json(); setTrainingMsg(j.error ?? "Failed."); }
     setTrainingSaving(false);
     setTimeout(() => setTrainingMsg(""), 3000);
+  }
+
+  async function backfillCalories() {
+    setBackfilling(true); setStravaMsg("");
+    try {
+      const res = await fetch("/api/strava/backfill-calories", { method: "POST" });
+      const j = await res.json();
+      if (res.ok) {
+        const n = j.data?.updated ?? 0;
+        setStravaMsg(n > 0 ? `${n} updated.` : "Nothing to backfill.");
+        if (n > 0) await refresh("training");
+      } else { setStravaMsg(j.error ?? "Failed."); }
+    } catch { setStravaMsg("Network error."); }
+    setBackfilling(false);
   }
 
   async function syncStrava() {
@@ -533,6 +548,10 @@ export default function Tracker() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                     {stravaSyncing ? "Syncing…" : "Sync Strava"}
+                  </button>
+                  <button onClick={backfillCalories} disabled={backfilling}
+                    className="flex items-center gap-1.5 text-xs text-white/30 hover:text-white border border-white/10 hover:border-white/20 px-3 py-1 rounded-md transition-colors disabled:opacity-40">
+                    {backfilling ? "Backfilling…" : "Backfill kcal"}
                   </button>
                   {stravaMsg && <span className="text-xs text-white/40">{stravaMsg}</span>}
                 </div>
