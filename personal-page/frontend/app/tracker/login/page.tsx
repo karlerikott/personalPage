@@ -29,7 +29,7 @@ export default function TrackerLogin() {
   }
 
   return (
-    <main className="min-h-screen bg-[#250902] flex items-center justify-center px-4">
+    <main className="min-h-screen bg-[#021b26] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <p className="font-[family-name:var(--font-geist-mono)] text-white/30 text-xs tracking-widest uppercase mb-6">
           Tracker
@@ -48,7 +48,7 @@ export default function TrackerLogin() {
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-3 bg-[#ad2831] hover:bg-[#ad2831]/80 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors text-sm"
+            className="px-6 py-3 bg-[#02c39a] hover:bg-[#02c39a]/80 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors text-sm"
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>

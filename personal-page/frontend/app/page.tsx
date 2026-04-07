@@ -3,14 +3,14 @@ import BackToTop from "@/components/BackToTop";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#250902] text-white font-[family-name:var(--font-geist-sans)]">
+    <main className="min-h-screen bg-[#021b26] text-white font-[family-name:var(--font-geist-sans)]">
 
       <Navbar />
 
       {/* Hero */}
       <section className="min-h-screen flex flex-col justify-center px-8 md:px-20 pt-24">
         <div className="max-w-3xl">
-          <p className="font-[family-name:var(--font-geist-mono)] text-[#ad2831] text-sm tracking-widest uppercase mb-6">
+          <p className="font-[family-name:var(--font-geist-mono)] text-[#f0f3bd] text-sm tracking-widest uppercase mb-6">
             Available for new opportunities
           </p>
           <h1 className="text-6xl md:text-8xl font-bold tracking-tight leading-none mb-6">
@@ -25,7 +25,7 @@ export default function Home() {
           <div className="flex gap-4 flex-wrap">
             <a
               href="#contact"
-              className="px-6 py-3 bg-[#ad2831] hover:bg-[#ad2831]/80 text-white font-semibold rounded-full transition-colors text-sm"
+              className="px-6 py-3 bg-[#02c39a] hover:bg-[#02c39a]/80 text-white font-semibold rounded-full transition-colors text-sm"
             >
               Get in touch
             </a>

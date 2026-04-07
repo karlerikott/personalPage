@@ -14,7 +14,7 @@ export default function TrackerError({
   }, [error]);
 
   return (
-    <main className="min-h-screen bg-[#250902] text-white font-[family-name:var(--font-geist-sans)] px-4 pb-12 pt-8">
+    <main className="min-h-screen bg-[#021b26] text-white font-[family-name:var(--font-geist-sans)] px-4 pb-12 pt-8">
       <div className="max-w-3xl mx-auto">
         <div className="mb-10">
           <p className="font-[family-name:var(--font-geist-mono)] text-white/30 text-xs tracking-widest uppercase mb-1">

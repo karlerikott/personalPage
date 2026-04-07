@@ -15,7 +15,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 w-full z-10 px-8 py-5 flex justify-between items-center border-b border-white/5 bg-[#250902]/90 backdrop-blur-sm">
+    <nav className="fixed top-0 w-full z-10 px-8 py-5 flex justify-between items-center border-b border-white/5 bg-[#021b26]/90 backdrop-blur-sm">
       <Link href="/" className="font-[family-name:var(--font-geist-mono)] text-sm text-white/40 tracking-widest uppercase">
         KEO
       </Link>
@@ -42,7 +42,7 @@ export default function Navbar() {
 
       {/* Mobile dropdown */}
       {open && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-white/5 flex flex-col px-8 py-4 gap-4">
+        <div className="md:hidden absolute top-full left-0 w-full bg-[#021b26]/95 backdrop-blur-sm border-b border-white/5 flex flex-col px-8 py-4 gap-4">
           {NAV_LINKS.map((l) => (
             <a
               key={l.label}
