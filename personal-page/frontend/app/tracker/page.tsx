@@ -123,7 +123,7 @@ export default function Tracker() {
   const sectionRefs = useRef<Record<SectionId, HTMLElement | null>>({ weight: null, calories: null, training: null });
 
   // Chart controls
-  const [weightRange, setWeightRange] = useState<Range>("all");
+  const [weightRange, setWeightRange] = useState<Range>("month");
   const [kcalRange, setKcalRange]     = useState<Range>("month");
   const [targetWeight, setTargetWeight] = useState<string>("92");
   const [calendarOffset, setCalendarOffset] = useState(0);
