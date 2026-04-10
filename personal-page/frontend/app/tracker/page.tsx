@@ -28,7 +28,11 @@ const RANGES: { label: string; value: Range }[] = [
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function toIsoDay(iso: string) { return iso.slice(0, 10); }
+function localDay(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function toIsoDay(iso: string) { return localDay(new Date(iso)); }
 
 function displayDate(isoDay: string) {
   const [y, m, d] = isoDay.split("-");
@@ -47,7 +51,7 @@ function calcStreak(weights: WeightEntry[]): number {
   if (!weights.length) return 0;
   const days = new Set(weights.map((w) => toIsoDay(w.createdAt)));
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const fmt = (d: Date) => d.toISOString().slice(0, 10);
+  const fmt = (d: Date) => localDay(d);
   const yesterday = new Date(today.getTime() - 86400000);
   let cursor = days.has(fmt(today)) ? new Date(today) : new Date(yesterday);
   if (!days.has(fmt(cursor))) return 0;
@@ -88,7 +92,7 @@ function buildCalendar(trainings: TrainingEntry[], viewDate: Date) {
   while (cursor <= gridEnd) {
     const week: CalendarCell[] = [];
     for (let d = 0; d < 7; d++) {
-      const iso = cursor.toISOString().slice(0, 10);
+      const iso = localDay(cursor);
       const isCurrentMonth = cursor.getMonth() === viewDate.getMonth() && cursor.getFullYear() === viewDate.getFullYear();
       const isFuture = cursor > today;
       week.push({ date: iso, day: cursor.getDate(), types: isCurrentMonth && !isFuture ? (byDay.get(iso) ?? []) : [], isCurrentMonth, isFuture });
@@ -304,7 +308,7 @@ export default function Tracker() {
 
   // Merge calorie data onto weight data points
   const weightChartData = weightData.map((w) => {
-    const day = new Date(w.ts).toISOString().slice(0, 10);
+    const day = localDay(new Date(w.ts));
     return {
       ...w,
       consumed: kcalConsumedByDay[day] ?? null,
@@ -325,7 +329,7 @@ export default function Tracker() {
 
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - i);
-    const iso = d.toISOString().slice(0, 10);
+    const iso = localDay(d);
     const kcal = food.filter((f) => toIsoDay(f.createdAt) === iso).reduce((s, f) => s + f.kcal, 0);
     const kcalBurnt = trainings.filter((t) => toIsoDay(t.createdAt) === iso).reduce((s, t) => s + (t.caloriesBurnt ?? 0), 0);
     return { iso, label: d.toLocaleDateString("en-GB", { weekday: "short" }), day: d.getDate(), kcal, kcalBurnt };
